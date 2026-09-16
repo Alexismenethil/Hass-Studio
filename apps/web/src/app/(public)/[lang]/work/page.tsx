@@ -1,7 +1,7 @@
 import { pageMetadata } from "@/lib/server/metadata";
 import { getContent } from "@/lib/server/content";
 import { text, copy, pad, workCover, type Locale } from "@/lib/content";
-import { Lines } from "@/components/text";
+import { Chars } from "@/components/text";
 import { WorkList, type WorkGroup } from "@/components/work-list";
 
 export default async function WorkPage({ params }: { params: Promise<{ lang: Locale }> }) {
@@ -32,8 +32,8 @@ export default async function WorkPage({ params }: { params: Promise<{ lang: Loc
           </span>
           <span className="eyebrow">{pad(works.length)}</span>
         </div>
-        <h1 className="display" data-lines>
-          <Lines text={text(settings.workTitle, lang)} italicLast />
+        <h1 className="display" data-chars>
+          <Chars text={text(settings.workTitle, lang)} italicLast />
         </h1>
       </section>
       <section className="works-section" data-header="light">

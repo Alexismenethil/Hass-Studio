@@ -4,7 +4,7 @@ import { getContent } from "@/lib/server/content";
 import { copy, pad, text, workCover, type Locale } from "@/lib/content";
 import { Arrow } from "@/components/icon";
 import { Media } from "@/components/media";
-import { Lines } from "@/components/text";
+import { Chars } from "@/components/text";
 import { WorkCards } from "@/components/work-cards";
 
 type Params = Promise<{ lang: Locale; id: string }>;
@@ -49,8 +49,8 @@ export default async function ServicePage({ params }: { params: Params }) {
             {t.service} {pad(index + 1)} / {pad(categories.length)}
           </span>
         </div>
-        <h1 className="display" data-lines>
-          <Lines text={text(service.title, lang)} />
+        <h1 className="display" data-chars>
+          <Chars text={text(service.title, lang)} />
         </h1>
         <div className="page-hero-meta">
           <p className="lead" data-reveal>
@@ -71,7 +71,7 @@ export default async function ServicePage({ params }: { params: Params }) {
         </div>
       </section>
 
-      <div className="wide-media" data-expand>
+      <div className="wide-media" data-arch>
         <div className="wide-media-drift" data-parallax="8">
           <Media src={cover} sizes="100vw" alt="" priority />
         </div>
@@ -95,6 +95,7 @@ export default async function ServicePage({ params }: { params: Params }) {
           className="next-link"
           data-header="light"
           data-cursor={t.view}
+          data-label={text(next.title, lang)}
         >
           <span className="eyebrow">{t.nextService}</span>
           <span className="next-link-title">{text(next.title, lang)}</span>

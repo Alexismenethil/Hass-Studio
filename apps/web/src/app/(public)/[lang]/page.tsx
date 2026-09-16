@@ -1,11 +1,11 @@
 import Link from "next/link";
-import { getImageProps } from "next/image";
 import { pageMetadata } from "@/lib/server/metadata";
 import { getContent } from "@/lib/server/content";
-import { text, copy, isVideo, workCover, type Locale } from "@/lib/content";
-import { Arrow } from "@/components/icon";
+import { text, copy, workCover, type Locale } from "@/lib/content";
 import { Media } from "@/components/media";
-import { Lines, Words } from "@/components/text";
+import { Words } from "@/components/text";
+import { Opening } from "@/components/opening";
+import { Reel, type ReelItem } from "@/components/reel";
 import { ServicesCarousel, type ServiceSlide } from "@/components/services-carousel";
 
 export default async function Home({ params }: { params: Promise<{ lang: Locale }> }) {
@@ -25,80 +25,57 @@ export default async function Home({ params }: { params: Promise<{ lang: Locale 
       count: own.length,
     };
   });
-  const alt =
-    lang === "en"
-      ? "Warm coastal stone, olive branches and a quiet sea"
-      : "Piedra cálida, ramas de olivo y un mar sereno";
-  const art = (src: string, width: number, height: number) =>
-    getImageProps({
-      src,
-      alt,
-      width,
-      height,
-      sizes: "100vw",
-      quality: 75,
-      loading: "eager",
-      fetchPriority: "high",
-    }).props;
-  const desktop = !isVideo(s.heroImage) && s.heroImage ? art(s.heroImage, 1920, 1080) : null;
-  const mobile =
-    s.heroMobileImage && !isVideo(s.heroMobileImage) ? art(s.heroMobileImage, 900, 1600) : null;
+  const featured = works.filter((w) => w.featured);
+  const reel: ReelItem[] = (featured.length >= 3 ? featured : works).slice(0, 8).map((w) => ({
+    slug: w.slug,
+    title: w.title,
+    year: w.year,
+    cover: workCover(w),
+    service: text(categories.find((c) => c.id === w.category_id)?.title ?? { en: "", es: "" }, lang),
+  }));
   return (
     <main id="main">
-      <section className="hero" data-header="dark">
-        <div className="hero-frame">
-          <div className="hero-media">
-            {desktop ? (
-              <picture>
-                {mobile && <source media="(max-width: 767px)" srcSet={mobile.srcSet} />}
-                <img {...desktop} alt={alt} className="media" />
-              </picture>
-            ) : (
-              <Media src={s.heroImage} alt={alt} priority />
-            )}
-          </div>
-          <div className="hero-shade" />
-          <div className="hero-content">
-            <h1 className="hero-title">
-              <Lines text={text(s.heroTitle, lang)} italicLast />
-            </h1>
-            {text(s.heroDescription, lang) && (
-              <p className="hero-sub">{text(s.heroDescription, lang).replace(/\n/g, " ")}</p>
-            )}
-          </div>
-          <a className="hero-scroll" href="#services">
-            <span>{t.scroll}</span>
-            <i />
-          </a>
-        </div>
-      </section>
+      <Opening
+        image={s.heroImage}
+        mobileImage={s.heroMobileImage}
+        title={text(s.heroTitle, lang)}
+        sub={text(s.heroDescription, lang)}
+        eyebrow={text(s.heroEyebrow, lang)}
+        statement={text(s.introTitle, lang)}
+        alt={
+          lang === "en"
+            ? "Warm coastal stone, olive branches and a quiet sea"
+            : "Piedra cálida, ramas de olivo y un mar sereno"
+        }
+        locale={lang}
+      />
 
       <ServicesCarousel slides={slides} locale={lang} />
 
-      <section className="statement" data-header="light">
-        <span className="eyebrow statement-label" data-reveal>
-          {s.brand}
-        </span>
-        <h2 className="statement-title" data-words>
-          <Words text={text(s.introTitle, lang)} />
-        </h2>
-        <div className="statement-foot">
-          <p data-reveal>{text(s.introText, lang)}</p>
+      <Reel items={reel} title={text(s.workTitle, lang)} total={works.length} locale={lang} />
+
+      <section className="manifesto" data-header="light">
+        <div className="manifesto-window" data-wipe>
+          <div className="manifesto-drift" data-parallax="7">
+            <Media src={s.detailImage || s.studioImage} sizes="(max-width: 767px) 70vw, 30vw" alt="" />
+          </div>
+        </div>
+        <div className="manifesto-copy">
+          <span className="eyebrow" data-reveal>
+            {s.brand} · {text(s.availability, lang)}
+          </span>
+          <p className="manifesto-text" data-words>
+            <Words text={text(s.introText, lang)} />
+          </p>
           <Link
             href={"/" + lang + "/studio"}
             className="orb orb-dark"
             data-magnetic="0.3"
-            data-reveal="0.1"
+            data-label={t.studio}
           >
             <span>{t.about}</span>
           </Link>
         </div>
-        {works.length > 0 && (
-          <Link href={"/" + lang + "/work"} className="statement-all text-link" data-reveal>
-            {t.allWork} <sup>{works.length}</sup>
-            <Arrow diagonal />
-          </Link>
-        )}
       </section>
     </main>
   );

@@ -42,6 +42,15 @@ export default async function RootLayout({
       className={sans.variable + " " + serif.variable}
       suppressHydrationWarning
     >
+      <head>
+        {/* Runs before paint: enables reveal states and skips the intro after the first visit. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              "document.documentElement.classList.add('js');try{if(sessionStorage.getItem('hass-intro'))document.documentElement.dataset.intro='seen'}catch(e){}",
+          }}
+        />
+      </head>
       <body>{children}</body>
     </html>
   );

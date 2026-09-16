@@ -34,11 +34,11 @@ export function HomeEditor({ settings }: { settings: Settings }) {
           <LangSwitch
             lang={lang}
             setLang={setLang}
-            values={[s.heroTitle, s.heroDescription, s.introTitle, s.introText]}
+            values={[s.heroTitle, s.heroDescription, s.introTitle, s.heroEyebrow, s.workTitle, s.introText]}
           />
           <Card
             title="1 · Portada"
-            intro="La primera pantalla que ve la gente: una imagen a pantalla completa, tu frase grande y una línea corta."
+            intro="La primera pantalla: tu imagen con luz entre hojas de olivo que se mueve, tu frase grande y una línea corta."
           >
             <BiField
               label="Frase grande"
@@ -74,8 +74,27 @@ export function HomeEditor({ settings }: { settings: Settings }) {
             </div>
           </Card>
           <Card
-            title="2 · Carrusel de servicios"
-            intro="Debajo de la portada aparece el carrusel. Cada diapositiva es uno de tus servicios con sus trabajos."
+            title="2 · El arco"
+            intro="Al bajar, la portada se cierra en un arco y aparece tu frase a ambos lados. Luego se atraviesa el arco hacia los servicios."
+          >
+            <BiField
+              label="Frase a los lados del arco"
+              lang={lang}
+              rows={2}
+              value={s.introTitle}
+              onChange={(v) => set("introTitle", v)}
+              hint="Primera línea a la izquierda, segunda a la derecha (en cursiva)."
+            />
+            <BiField
+              label="Frase pequeña bajo el arco"
+              lang={lang}
+              value={s.heroEyebrow}
+              onChange={(v) => set("heroEyebrow", v)}
+            />
+          </Card>
+          <Card
+            title="3 · Carrusel de servicios"
+            intro="Cada diapositiva es uno de tus servicios: su foto de fondo, su nombre gigante y un arco con sus trabajos."
             aside={
               <Link className="admin-secondary" href={base + "/web/servicios"}>
                 Editar servicios →
@@ -83,28 +102,44 @@ export function HomeEditor({ settings }: { settings: Settings }) {
             }
           >
             <p className="kit-note">
-              El orden, los títulos, las imágenes y los trabajos del carrusel se editan en{" "}
-              <b>Servicios y trabajos</b>.
+              El orden, los títulos, las imágenes y los trabajos se editan en <b>Servicios y trabajos</b>.
             </p>
           </Card>
           <Card
-            title="3 · Frase del estudio"
-            intro="Texto grande que se ilumina palabra por palabra al hacer scroll, después del carrusel."
+            title="4 · Trabajos destacados"
+            intro="Una tira de trabajos que avanza de lado al hacer scroll."
           >
             <BiField
-              label="Frase grande"
+              label="Título"
               lang={lang}
               rows={2}
-              value={s.introTitle}
-              onChange={(v) => set("introTitle", v)}
+              value={s.workTitle}
+              onChange={(v) => set("workTitle", v)}
+              hint="También es el título de la página Proyectos."
             />
+            <p className="kit-note">
+              Activa <b>«Destacar en la portada»</b> dentro de cada trabajo. Si destacas menos de 3, se muestran
+              tus trabajos en orden.
+            </p>
+          </Card>
+          <Card title="5 · Sobre el estudio" intro="Tu texto con una foto en arco, justo antes del pie de página.">
             <BiField
-              label="Párrafo"
+              label="Texto"
               lang={lang}
               rows={4}
               value={s.introText}
               onChange={(v) => set("introText", v)}
+              hint="Se ilumina palabra por palabra al hacer scroll."
             />
+            <div className="kit-row">
+              <MediaPicker
+                label="Foto del arco"
+                ratio="3 / 4"
+                value={s.detailImage}
+                onChange={(v) => set("detailImage", v)}
+              />
+              <div />
+            </div>
           </Card>
         </div>
         <aside className="editor-side">
@@ -147,7 +182,7 @@ export function StudioEditor({ settings }: { settings: Settings }) {
           <LangSwitch
             lang={lang}
             setLang={setLang}
-            values={[s.studioTitle, s.studioText, s.availability, s.contactTitle, s.contactText, s.workTitle]}
+            values={[s.studioTitle, s.studioText, s.availability, s.contactTitle, s.contactText]}
           />
           <Card title="Página Estudio" intro="Quién eres y cómo trabajas.">
             <BiField
@@ -260,15 +295,6 @@ export function StudioEditor({ settings }: { settings: Settings }) {
                 + Añadir red
               </button>
             </div>
-          </Card>
-          <Card title="Página Proyectos" intro="La lista con todos tus trabajos (menú → Proyectos).">
-            <BiField
-              label="Título de la página"
-              lang={lang}
-              rows={2}
-              value={s.workTitle}
-              onChange={(v) => set("workTitle", v)}
-            />
           </Card>
         </div>
         <aside className="editor-side">

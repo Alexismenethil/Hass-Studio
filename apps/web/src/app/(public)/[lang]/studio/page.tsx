@@ -4,7 +4,7 @@ import { getContent } from "@/lib/server/content";
 import { text, copy, pad, type Locale } from "@/lib/content";
 import { Arrow } from "@/components/icon";
 import { Media } from "@/components/media";
-import { Lines } from "@/components/text";
+import { Chars } from "@/components/text";
 export default async function Studio({ params }: { params: Promise<{ lang: Locale }> }) {
   const { lang } = await params;
   const { settings: s, categories, works } = await getContent();
@@ -18,8 +18,8 @@ export default async function Studio({ params }: { params: Promise<{ lang: Local
           </span>
           <span className="eyebrow">{text(s.availability, lang)}</span>
         </div>
-        <h1 className="display" data-lines>
-          <Lines text={text(s.studioTitle, lang)} italicLast />
+        <h1 className="display" data-chars>
+          <Chars text={text(s.studioTitle, lang)} italicLast />
         </h1>
       </section>
       <section className="portrait-section" data-header="light">

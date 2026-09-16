@@ -6,6 +6,7 @@ import { SiteNav } from "@/components/site-nav";
 import { Footer } from "@/components/footer";
 import { Motion } from "@/components/motion";
 import { Cursor } from "@/components/cursor";
+import { Grain, PageTransition } from "@/components/cinema";
 import { siteUrl } from "@/lib/server/site-url";
 export async function generateMetadata({
   params,
@@ -57,6 +58,8 @@ export default async function Layout({
       <SiteNav locale={lang as Locale} settings={settings} />
       <Motion />
       <Cursor />
+      <Grain />
+      <PageTransition />
       {children}
       <Footer locale={lang as Locale} settings={settings} />
     </div>

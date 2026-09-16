@@ -4,9 +4,10 @@ import { usePathname } from "next/navigation";
 
 /**
  * Declarative scroll motion for server-rendered markup:
- * data-reveal (rise once), data-lines (masked lines rise once),
- * data-words (words brighten with scroll), data-parallax="n" (drift ±n%),
- * data-expand (media opens to full width), data-magnetic (follows pointer).
+ * data-chars (letters come into focus), data-lines (masked lines rise),
+ * data-reveal (rise once), data-words (words brighten with scroll),
+ * data-parallax="n" (drift ±n%), data-arch (an arched window opens to full width),
+ * data-wipe (a curtain lifts off the image), data-magnetic (follows the pointer).
  */
 export function Motion() {
   const path = usePathname();
@@ -20,36 +21,15 @@ export function Motion() {
       gsap.registerPlugin(ScrollTrigger);
       const mm = gsap.matchMedia();
       mm.add("(prefers-reduced-motion: no-preference)", () => {
-        const hero = document.querySelector<HTMLElement>(".hero");
-        if (hero) {
-          gsap
-            .timeline({ defaults: { ease: "expo.out" } })
-            .from(".hero-media", { scale: 1.18, duration: 2.4 }, 0)
-            .from(".hero .line-inner", { yPercent: 118, duration: 1.5, stagger: 0.12 }, 0.15)
-            .from(".hero-sub, .hero-scroll", { opacity: 0, y: 16, duration: 1.2, stagger: 0.1 }, 0.7);
-          const exit = { trigger: hero, start: "top top", end: "bottom top", scrub: 0.3 };
-          gsap.to(".hero-media", { yPercent: 14, scale: 1.08, ease: "none", scrollTrigger: exit });
-          gsap.fromTo(
-            ".hero-frame",
-            { clipPath: "inset(0% 0% 0% 0% round 0px)" },
-            { clipPath: "inset(0% 3% 9% 3% round 28px)", ease: "none", scrollTrigger: exit },
-          );
-          gsap.utils.toArray<HTMLElement>(".hero .line").forEach((line, i) =>
-            gsap.to(line, {
-              xPercent: i % 2 ? 14 : -14,
-              opacity: 0.1,
-              ease: "none",
-              scrollTrigger: exit,
-            }),
-          );
-          gsap.to(".hero-sub, .hero-scroll", {
-            opacity: 0,
-            ease: "none",
-            scrollTrigger: { trigger: hero, start: "top top", end: "40% top", scrub: true },
+        gsap.utils.toArray<HTMLElement>("[data-chars]").forEach((el) => {
+          ScrollTrigger.create({
+            trigger: el,
+            start: "top 90%",
+            once: true,
+            onEnter: () => el.classList.add("is-in"),
           });
-        }
+        });
         gsap.utils.toArray<HTMLElement>("[data-lines]").forEach((el) => {
-          if (el.closest(".hero")) return;
           gsap.from(el.querySelectorAll(".line-inner"), {
             yPercent: 118,
             duration: 1.3,
@@ -89,28 +69,36 @@ export function Motion() {
             {
               yPercent: amount,
               ease: "none",
-              scrollTrigger: {
-                trigger: el.parentElement,
-                start: "top bottom",
-                end: "bottom top",
-                scrub: 0.3,
-              },
+              scrollTrigger: { trigger: el.parentElement, start: "top bottom", end: "bottom top", scrub: 0.3 },
             },
           );
         });
-        gsap.utils.toArray<HTMLElement>("[data-expand]").forEach((el) => {
-          gsap.fromTo(
-            el,
-            { clipPath: "inset(0% 7% 0% 7% round 22px)" },
-            {
-              clipPath: "inset(0% 0% 0% 0% round 0px)",
-              ease: "none",
-              scrollTrigger: { trigger: el, start: "top 95%", end: "top 15%", scrub: 0.3 },
-            },
-          );
+        gsap.utils.toArray<HTMLElement>("[data-arch]").forEach((el) => {
+          const media = el.querySelector(".media");
+          gsap
+            .timeline({
+              scrollTrigger: { trigger: el, start: "top 92%", end: "top 8%", scrub: 0.3 },
+            })
+            .fromTo(
+              el,
+              { clipPath: "inset(0% 30% 0% 30% round 600px 600px 0px 0px)" },
+              { clipPath: "inset(0% 0% 0% 0% round 0px 0px 0px 0px)", ease: "none" },
+              0,
+            )
+            .fromTo(media, { scale: 1.35 }, { scale: 1, ease: "none" }, 0);
+        });
+        gsap.utils.toArray<HTMLElement>("[data-wipe]").forEach((el) => {
+          const media = el.querySelector(".media");
+          gsap
+            .timeline({
+              scrollTrigger: { trigger: el, start: "top 96%", end: "top 45%", scrub: 0.3 },
+            })
+            .fromTo(el, { clipPath: "inset(100% 0% 0% 0%)" }, { clipPath: "inset(0% 0% 0% 0%)", ease: "none" }, 0)
+            .fromTo(media, { scale: 1.4 }, { scale: 1, ease: "none" }, 0);
         });
         const footer = document.querySelector(".site-footer");
         if (footer) {
+          const arrive = { trigger: footer, start: "top bottom", end: "bottom bottom", scrub: 0.4 };
           gsap.fromTo(
             ".footer-curve",
             { scaleY: 1 },
@@ -120,11 +108,10 @@ export function Motion() {
               scrollTrigger: { trigger: footer, start: "top bottom", end: "top 40%", scrub: true },
             },
           );
-          gsap.from(".footer-inner", {
-            yPercent: -8,
-            ease: "none",
-            scrollTrigger: { trigger: footer, start: "top bottom", end: "bottom bottom", scrub: 0.3 },
-          });
+          gsap.from(".footer-inner", { yPercent: -8, ease: "none", scrollTrigger: arrive });
+          gsap.fromTo(".footer-rise", { yPercent: 92 }, { yPercent: 18, ease: "none", scrollTrigger: arrive });
+          gsap.fromTo(".footer-sun", { rotate: -40 }, { rotate: 20, ease: "none", scrollTrigger: arrive });
+          gsap.fromTo(".footer-glow, .footer-sea", { opacity: 0 }, { opacity: 1, ease: "none", scrollTrigger: arrive });
         }
         const cleanups: (() => void)[] = [];
         if (window.matchMedia("(pointer: fine)").matches)
@@ -150,11 +137,17 @@ export function Motion() {
         const refresh = () => ScrollTrigger.refresh();
         document.fonts?.ready.then(refresh);
         window.addEventListener("load", refresh);
+        // Sections that size themselves (the reel) settle after hydration.
+        const late = window.setTimeout(refresh, 600);
         ScrollTrigger.refresh();
         return () => {
           cleanups.forEach((fn) => fn());
           window.removeEventListener("load", refresh);
+          window.clearTimeout(late);
         };
+      });
+      mm.add("(prefers-reduced-motion: reduce)", () => {
+        document.querySelectorAll("[data-chars]").forEach((el) => el.classList.add("is-in"));
       });
       dispose = () => mm.revert();
     });

@@ -2595,6 +2595,8 @@
   color: #585c50;
 }
 .publish-box {
+  display: grid;
+  gap: 16px;
   padding: 16px;
   border-radius: 16px;
   background: #fff;

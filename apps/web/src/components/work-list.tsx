@@ -65,6 +65,7 @@ export function WorkList({ groups, locale }: { groups: WorkGroup[]; locale: Loca
                 className={"work-row" + (hovered === n ? " is-hovered" : "")}
                 onPointerEnter={() => setHovered(n)}
                 data-cursor={t.view}
+                data-label={row.title}
                 data-reveal
               >
                 <span className="work-row-thumb">

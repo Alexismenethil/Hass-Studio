@@ -5,6 +5,7 @@ import { text, copy, workCover, workMedia, type Locale } from "@/lib/content";
 import { Arrow } from "@/components/icon";
 import { Media } from "@/components/media";
 import { MirrorStage } from "@/components/mirror-stage";
+import { Chars } from "@/components/text";
 
 type Params = Promise<{ lang: Locale; slug: string }>;
 
@@ -54,10 +55,8 @@ export default async function CasePage({ params }: { params: Params }) {
           )}
           {w.concept && <span className="eyebrow">{t.concept}</span>}
         </div>
-        <h1 className="display" data-lines>
-          <span className="line">
-            <span className="line-inner">{w.title}</span>
-          </span>
+        <h1 className="display" data-chars>
+          <Chars text={w.title} single />
         </h1>
         <div className="page-hero-meta">
           <p className="lead" data-reveal>
@@ -124,6 +123,7 @@ export default async function CasePage({ params }: { params: Params }) {
           className="next-link"
           data-header="light"
           data-cursor={t.view}
+          data-label={next.title}
         >
           <span className="eyebrow">{t.next}</span>
           <span className="next-link-title">{next.title}</span>

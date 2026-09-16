@@ -3,7 +3,10 @@ import Link from "next/link";
 import { useCallback, useEffect, useRef, useState, type CSSProperties } from "react";
 import { Arrow } from "./icon";
 import { Media } from "./media";
+import { Sun } from "./cinema";
+import { createRenderer, type Texture } from "./gl/gl";
 import { copy, pad, type Locale } from "@/lib/content";
+import { clamp, easeInOut, easeOut, useScene } from "@/lib/scene";
 
 export type ServiceSlide = {
   id: string;
@@ -15,46 +18,68 @@ export type ServiceSlide = {
   count: number;
 };
 
-const clamp = (v: number, min = 0, max = 1) => Math.min(max, Math.max(min, v));
+/** Light burns through one photograph into the next along a drifting noise field. */
+const DISSOLVE = `
+uniform sampler2D uA;
+uniform sampler2D uB;
+uniform vec2 uRes;
+uniform vec2 uImgA;
+uniform vec2 uImgB;
+uniform float uP;
+uniform float uIntro;
+uniform float uTime;
+void main() {
+  vec2 uv = vUv;
+  float aspect = uRes.x / uRes.y;
+  vec2 q = vec2(uv.x * aspect, uv.y);
+  float n = fbm(q * 1.6 + vec2(uTime * 0.03, -uTime * 0.02));
+  float edge = uP * 1.3 - 0.15;
+  float field = n + (0.5 - uv.y) * 0.18;
+  float m = 1.0 - smoothstep(edge - 0.09, edge + 0.09, field);
+  vec2 push = vec2(n - 0.5, n - 0.5) * 0.09;
+  vec2 ua = (uv - 0.5) / (1.0 + 0.1 * uP) + 0.5 + push * m;
+  vec2 ub = (uv - 0.5) / (1.1 - 0.1 * uP) + 0.5 - push * (1.0 - m);
+  vec3 a = texture2D(uA, cover(ua, uRes, uImgA)).rgb;
+  vec3 b = texture2D(uB, cover(ub, uRes, uImgB)).rgb;
+  vec3 col = mix(a, b, m);
+  col += vec3(1.0, 0.72, 0.42) * m * (1.0 - m) * 4.0 * 0.32;
+  float leaves = fbm(q * 1.4 + vec2(-uTime * 0.012, uTime * 0.008));
+  col *= mix(0.9, 1.06, smoothstep(0.4, 0.7, leaves));
+  float ie = uIntro * 1.3 - 0.15;
+  float shown = 1.0 - smoothstep(ie - 0.1, ie + 0.1, fbm(q * 2.0 + 7.0) + (uv.y - 0.5) * 0.3);
+  vec3 night = vec3(0.078, 0.086, 0.07);
+  col = mix(night, col, shown) + vec3(1.0, 0.7, 0.4) * shown * (1.0 - shown) * 4.0 * 0.25;
+  gl_FragColor = vec4(col, 1.0);
+}`;
 
-/** Rotates through the service's own designs while its card is in front. */
 function CardCovers({ covers, active }: { covers: string[]; active: boolean }) {
   const [shown, setShown] = useState(0);
   useEffect(() => {
     if (!active || covers.length < 2) return;
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    const timer = window.setInterval(
-      () => setShown((n) => (n + 1) % covers.length),
-      2600,
-    );
+    const timer = window.setInterval(() => setShown((n) => (n + 1) % covers.length), 3200);
     return () => window.clearInterval(timer);
   }, [active, covers.length]);
   return (
     <>
       {covers.map((src, i) => (
-        <span
-          key={src + i}
-          className={"svc-cover" + (i === shown ? " is-shown" : "")}
-        >
-          <Media src={src} sizes="(max-width: 767px) 55vw, 22vw" />
+        <span key={src + i} className={"arch-cover" + (i === shown ? " is-shown" : "")}>
+          <Media src={src} sizes="(max-width: 767px) 60vw, 26vw" />
         </span>
       ))}
     </>
   );
 }
 
-export function ServicesCarousel({
-  slides,
-  locale,
-}: {
-  slides: ServiceSlide[];
-  locale: Locale;
-}) {
+export function ServicesCarousel({ slides, locale }: { slides: ServiceSlide[]; locale: Locale }) {
   const t = copy[locale];
   const n = slides.length;
   const root = useRef<HTMLElement>(null);
-  const track = useRef<HTMLDivElement>(null);
+  const canvas = useRef<HTMLCanvasElement>(null);
+  const renderer = useRef<ReturnType<typeof createRenderer>>(null);
+  const textures = useRef<Texture[]>([]);
   const drag = useRef<{ x: number; moved: boolean } | null>(null);
+  const current = useRef(-1);
   const [active, setActive] = useState(0);
 
   const go = useCallback(
@@ -63,110 +88,95 @@ export function ServicesCarousel({
       if (!el || n < 2) return;
       const next = clamp(index, 0, n - 1);
       const total = el.offsetHeight - window.innerHeight;
-      const top = window.scrollY + el.getBoundingClientRect().top;
       window.scrollTo({
-        top: top + (total * next) / (n - 1) + 1,
-        behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
-          ? "instant"
-          : "smooth",
+        top: window.scrollY + el.getBoundingClientRect().top + (total * next) / (n - 1) + 2,
+        behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth",
       });
     },
     [n],
   );
 
   useEffect(() => {
-    const el = root.current;
-    const row = track.current;
-    if (!el || !row || !n) return;
-    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const titles = Array.from(row.querySelectorAll<HTMLElement>(".svc-title"));
-    const backgrounds = Array.from(el.querySelectorAll<HTMLElement>(".svc-bg-item"));
-    const cards = Array.from(el.querySelectorAll<HTMLElement>(".svc-card-item"));
-    const bar = el.querySelector<HTMLElement>(".svc-progress i");
-    let centers: number[] = [];
-    let smooth = -1;
-    let drawn = -1;
-    let current = -1;
-    let frame = 0;
-    let running = false;
-    const measure = () => {
-      centers = titles.map((title) => title.offsetLeft + title.offsetWidth / 2);
-      drawn = -1;
-    };
-    // Scroll position → slide position, lingering gently on each service.
-    const target = () => {
-      if (n < 2) return 0;
-      const total = el.offsetHeight - window.innerHeight;
-      const raw = total > 0 ? clamp(-el.getBoundingClientRect().top / total) : 0;
-      const p = raw * (n - 1);
-      if (reduced.matches) return Math.round(p);
-      const i = Math.min(Math.floor(p), n - 2);
-      const f = p - i;
-      return i + f - (0.5 * Math.sin(2 * Math.PI * f)) / (2 * Math.PI);
-    };
-    const render = (p: number) => {
-      const i = Math.min(Math.floor(p), n - 1);
-      const f = p - i;
-      const from = centers[i] ?? 0;
-      const to = centers[Math.min(i + 1, n - 1)] ?? from;
-      row.style.transform = `translate3d(${-(from + (to - from) * f)}px,0,0)`;
-      titles.forEach((title, k) => {
-        title.style.opacity = String(1 - Math.min(1, Math.abs(k - p)) * 0.74);
-      });
-      backgrounds.forEach((bg, k) => {
-        // Hold each photograph fully, then cross quickly around the midpoint.
-        const v = clamp((1 - Math.abs(k - p) - 0.18) / 0.64);
-        bg.style.opacity = String(v);
-        bg.style.setProperty("--v", v.toFixed(4));
-      });
-      cards.forEach((card, k) => {
-        card.style.setProperty("--r", (k === 0 ? 1 : clamp(p - (k - 1))).toFixed(4));
-      });
-      if (bar) bar.style.transform = `scaleX(${n > 1 ? (p / (n - 1)).toFixed(4) : 1})`;
-      const index = Math.round(p);
-      if (index !== current) {
-        current = index;
-        setActive(index);
-      }
-    };
-    const loop = () => {
-      const goal = target();
-      smooth = smooth < 0 || reduced.matches ? goal : smooth + (goal - smooth) * 0.22;
-      if (Math.abs(goal - smooth) < 0.0004) smooth = goal;
-      if (smooth !== drawn) {
-        render(smooth);
-        drawn = smooth;
-      }
-      frame = requestAnimationFrame(loop);
-    };
-    const start = () => {
-      if (running) return;
-      running = true;
-      frame = requestAnimationFrame(loop);
-    };
-    const stop = () => {
-      running = false;
-      cancelAnimationFrame(frame);
-    };
-    const observer = new IntersectionObserver(
-      ([entry]) => (entry.isIntersecting ? start() : stop()),
-      { rootMargin: "25% 0px" },
+    const surface = canvas.current;
+    if (!surface || !n || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const r = createRenderer(surface, DISSOLVE);
+    renderer.current = r;
+    if (!r) return;
+    let loaded = 0;
+    textures.current = slides.map((slide) =>
+      r.texture(slide.media, () => {
+        loaded += 1;
+        if (loaded === 1) surface.classList.add("is-ready");
+      }),
     );
-    const resize = new ResizeObserver(measure);
-    measure();
-    render(target());
-    observer.observe(el);
-    resize.observe(row);
-    document.fonts?.ready.then(measure);
     return () => {
-      stop();
-      observer.disconnect();
-      resize.disconnect();
+      textures.current.forEach((tex) => tex.video?.pause());
+      r.destroy();
+      renderer.current = null;
     };
-  }, [n]);
+    // Media URLs identify the slides; re-create only when they change.
+  }, [slides.map((s) => s.media).join("|")]);
+
+  useScene(root, ({ p: raw, rect, vw, vh, time, reduced }) => {
+    const el = root.current;
+    if (!el) return;
+    const position = raw * (n - 1);
+    let p = position;
+    if (reduced) p = Math.round(position);
+    else if (n > 1) {
+      const i = Math.min(Math.floor(position), n - 2);
+      const f = position - i;
+      p = i + f - (0.62 * Math.sin(2 * Math.PI * f)) / (2 * Math.PI);
+    }
+    // Light breaks through the dark as soon as the section reaches the screen.
+    const enter = reduced ? 1 : easeOut(clamp((vh - rect.top) / (vh * 0.72)));
+    el.style.setProperty("--enter", enter.toFixed(4));
+    el.style.setProperty(
+      "--lift",
+      (!reduced && rect.top > 0 && rect.top <= vh ? rect.top : 0).toFixed(1) + "px",
+    );
+    el.style.setProperty("--p", p.toFixed(4));
+    el.querySelectorAll<HTMLElement>("[data-slide]").forEach((node) => {
+      const k = Number(node.dataset.slide);
+      node.style.setProperty("--q", (p - k).toFixed(4));
+      node.style.setProperty("--v", clamp(1 - Math.abs(p - k)).toFixed(4));
+      node.style.setProperty("--r", (k === 0 ? 1 : clamp(p - (k - 1))).toFixed(4));
+    });
+    const index = clamp(Math.round(p), 0, n - 1);
+    if (index !== current.current) {
+      current.current = index;
+      setActive(index);
+    }
+    const r = renderer.current;
+    if (!r || reduced) return;
+    const from = Math.min(Math.floor(p), n - 1);
+    const to = Math.min(from + 1, n - 1);
+    const a = textures.current[from];
+    const b = textures.current[to];
+    if (!a || !b) return;
+    textures.current.forEach((tex, k) => {
+      if (!tex.video) return;
+      if (k === from || k === to) {
+        if (tex.video.paused) tex.video.play().catch(() => {});
+        r.refresh(tex);
+      } else if (!tex.video.paused) tex.video.pause();
+    });
+    const [cw, ch] = r.resize(vw < 768 ? 1.2 : 1.5);
+    const gl = r.gl;
+    gl.uniform2f(r.uniform("uRes"), cw, ch);
+    gl.uniform2f(r.uniform("uImgA"), a.width, a.height);
+    gl.uniform2f(r.uniform("uImgB"), b.width, b.height);
+    gl.uniform1f(r.uniform("uP"), easeInOut(p - from));
+    gl.uniform1f(r.uniform("uIntro"), enter);
+    gl.uniform1f(r.uniform("uTime"), time);
+    r.bind(0, a, "uA");
+    r.bind(1, b, "uB");
+    r.draw();
+  });
 
   if (!n) return null;
   const slide = slides[active] ?? slides[0];
+  const href = (s: ServiceSlide) => "/" + locale + "/services/" + s.id;
   return (
     <section
       ref={root}
@@ -180,20 +190,21 @@ export function ServicesCarousel({
       <div
         className="svc-sticky"
         onPointerDown={(e) => {
-          if (e.pointerType !== "mouse" || e.button === 0)
-            drag.current = { x: e.clientX, moved: false };
+          if (e.pointerType !== "mouse" || e.button === 0) drag.current = { x: e.clientX, moved: false };
         }}
         onPointerMove={(e) => {
-          if (drag.current && Math.abs(e.clientX - drag.current.x) > 8)
+          if (drag.current && Math.abs(e.clientX - drag.current.x) > 8) {
             drag.current.moved = true;
+            // Page transitions listen before React does; tell them this is a drag.
+            document.documentElement.dataset.dragging = "1";
+          }
         }}
         onPointerUp={(e) => {
           const start = drag.current;
-          if (start && Math.abs(e.clientX - start.x) > 60)
-            go(active + (e.clientX < start.x ? 1 : -1));
-          // The click (if any) is dispatched right after; forget the drag once it has passed.
+          if (start && Math.abs(e.clientX - start.x) > 60) go(active + (e.clientX < start.x ? 1 : -1));
           window.setTimeout(() => {
             drag.current = null;
+            delete document.documentElement.dataset.dragging;
           }, 0);
         }}
         onPointerCancel={() => {
@@ -204,101 +215,123 @@ export function ServicesCarousel({
           drag.current = null;
         }}
         onKeyDown={(e) => {
-          if (e.key === "ArrowRight" || e.key === "ArrowLeft") {
+          if (e.key === "ArrowRight" || e.key === "ArrowDown" || e.key === "ArrowLeft" || e.key === "ArrowUp") {
             e.preventDefault();
-            go(active + (e.key === "ArrowRight" ? 1 : -1));
+            go(active + (e.key === "ArrowRight" || e.key === "ArrowDown" ? 1 : -1));
           }
         }}
       >
-        <div className="svc-bg" aria-hidden="true">
-          {slides.map((s) => (
-            <div className="svc-bg-item" key={s.id}>
-              <Media src={s.media} sizes="100vw" />
-            </div>
-          ))}
+        <div className="svc-stage" aria-hidden="true">
+          <div className="svc-fallback">
+            {slides.map((s, i) => (
+              <div className="svc-fallback-item" data-slide={i} key={s.id}>
+                <Media src={s.media} sizes="100vw" />
+              </div>
+            ))}
+          </div>
+          <canvas ref={canvas} className="svc-gl" />
           <div className="svc-shade" />
         </div>
 
-        <div className="svc-top">
+        <Sun className="svc-sun" />
+
+        <header className="svc-head">
           <span className="eyebrow">{t.services}</span>
           <span className="svc-count" aria-live="polite">
-            <b>{pad(active + 1)}</b>
+            <em>{pad(active + 1)}</em>
             <i />
             {pad(n)}
           </span>
+        </header>
+
+        {n > 1 && (
+          <nav className="svc-chapters" aria-label={t.services}>
+            {slides.map((s, i) => (
+              <button
+                key={s.id}
+                type="button"
+                data-slide={i}
+                aria-current={i === active ? "true" : undefined}
+                onClick={() => go(i)}
+              >
+                <i />
+                <span>{pad(i + 1)}</span>
+                <em>{s.title}</em>
+              </button>
+            ))}
+          </nav>
+        )}
+
+        <div className="svc-arch-wrap">
+          <span className="svc-arch-ring" aria-hidden="true" />
+          <Link
+            href={href(slide)}
+            className="svc-arch"
+            data-cursor={t.view}
+            data-label={slide.title}
+            draggable={false}
+            aria-label={slide.title}
+            tabIndex={-1}
+          >
+            {slides.map((s, i) => (
+              <span key={s.id} className="svc-arch-item" data-slide={i} aria-hidden={i !== active}>
+                <CardCovers covers={s.covers} active={i === active} />
+              </span>
+            ))}
+            <span className="svc-arch-count">
+              {pad(slide.count)} {t.projects}
+            </span>
+          </Link>
+        </div>
+
+        <div className="svc-drum">
+          {slides.map((s, i) => (
+            <Link
+              key={s.id}
+              href={href(s)}
+              className="svc-title"
+              data-slide={i}
+              data-cursor={t.view}
+              data-label={s.title}
+              aria-current={i === active ? "true" : undefined}
+              tabIndex={i === active ? 0 : -1}
+              draggable={false}
+            >
+              {Array.from(s.title).map((char, c) => (
+                <span key={c} style={{ "--ci": c, "--cc": s.title.length } as CSSProperties}>
+                  {char === " " ? " " : char}
+                </span>
+              ))}
+            </Link>
+          ))}
         </div>
 
         <p className="svc-tagline" key={"tag-" + active}>
           {slide.tagline}
         </p>
 
-        <div className="svc-track-wrap">
-          <div ref={track} className="svc-track">
-            {slides.map((s, i) => (
-              <Link
-                key={s.id}
-                href={"/" + locale + "/services/" + s.id}
-                className="svc-title"
-                data-cursor={t.view}
-                aria-current={i === active ? "true" : undefined}
-                tabIndex={i === active ? 0 : -1}
-                draggable={false}
-              >
-                {s.title}
-              </Link>
-            ))}
-          </div>
-        </div>
-
-        <div className="svc-card">
-          {slides.map((s, i) => (
-            <Link
-              key={s.id}
-              href={"/" + locale + "/services/" + s.id}
-              className="svc-card-item"
-              data-cursor={t.view}
-              aria-hidden={i !== active}
-              tabIndex={-1}
-              draggable={false}
-            >
-              <CardCovers covers={s.covers} active={i === active} />
-              <span className="svc-card-label">
-                {pad(s.count)} {t.projects}
-              </span>
-            </Link>
-          ))}
-        </div>
-
-        <div className="svc-bottom">
+        <div className="svc-foot">
           <p className="svc-includes" key={"inc-" + active}>
             <span className="eyebrow">{t.includes}</span>
             {slide.includes}
           </p>
-          {n > 1 && (
-            <div className="svc-controls">
-              <button
-                type="button"
-                onClick={() => go(active - 1)}
-                disabled={active === 0}
-                aria-label={t.previous}
-                data-magnetic
-              >
+          <div className="svc-controls">
+            {n > 1 && (
+              <button type="button" onClick={() => go(active - 1)} disabled={active === 0} aria-label={t.previous}>
                 <Arrow className="arrow-left" />
               </button>
-              <div className="svc-progress" aria-hidden="true">
-                <i />
-              </div>
-              <button
-                type="button"
-                onClick={() => go(active + 1)}
-                disabled={active === n - 1}
-                aria-label={t.following}
-                data-magnetic
-              >
+            )}
+            <Link href={href(slide)} className="svc-orb" data-magnetic="0.3" data-label={slide.title}>
+              <span>
+                {t.view} <Arrow diagonal />
+              </span>
+            </Link>
+            {n > 1 && (
+              <button type="button" onClick={() => go(active + 1)} disabled={active === n - 1} aria-label={t.following}>
                 <Arrow />
               </button>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </div>
     </section>

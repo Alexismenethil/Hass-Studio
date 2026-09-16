@@ -21,10 +21,12 @@ The running preview currently uses http://localhost:3001/en (port 3000 was occup
 
 ## What is included
 
-- Home: a clean full-screen hero, then an immersive services carousel (giant titles slide with scroll, backgrounds cross-fade, a centre card cycles through that service's work), then a word-by-word studio statement.
-- Service pages (`/[lang]/services/[id]`) list every published work of that service. The work index (`/[lang]/work`) groups all work with a pointer-following preview.
-- Work pages (`/[lang]/work/[slug]`): short description, optional "Visit website" link, and a scroll-driven room of mirrors — the frontal laptop rises as the lights dim, side mirrors unfold with live reflections, a floor reflection and ambient glow follow the screen. Screens (photos or MP4/WebM) change with scroll; full-page website captures travel inside the display and phone captures sit centred over a blurred copy.
-- Native scrolling throughout (sticky sections, short catch-up, no scroll hijacking), a "View" cursor, magnetic buttons, masked line reveals and reduced-motion fallbacks.
+- Identity motifs: Mediterranean light, the arch, the twelve-ray sun and the sea horizon, over ivory, olive and night, with a fine film grain.
+- Home: a first-visit intro (the sun draws itself, an arch opens onto the hero); a WebGL hero where leaf shadows drift over the photograph and a warm light follows the pointer; the hero closes into an arch framed by the studio phrase, then the viewer passes through it into the dark. Services emerge as light burns through (WebGL dissolve between service photographs), with a 3D drum of giant titles, an arch of that service's work and chapter markers. Selected work travels sideways as a film strip; a studio note sits beside an arched photograph.
+- Service pages (`/[lang]/services/[id]`) open their photograph from an arch and list every published work with curtain reveals. The work index (`/[lang]/work`) groups all work with a pointer-following preview.
+- Work pages (`/[lang]/work/[slug]`): short description, optional "Visit website" link, and a scroll-driven scene — an iris of light closes on a closed laptop, the lid opens in 3D, the display wakes with a warm flash, side mirrors unfold with live reflections, dust drifts through a beam of light. Screens (photos or MP4/WebM) change with scroll; full-page captures travel inside the display, phone captures sit over a blurred copy.
+- Page changes play an arch-shaped curtain carrying the destination's name. The footer is a sunset: the sun rises over the horizon with its reflection on the sea.
+- Native scrolling throughout (sticky sections, short catch-up, no scroll hijacking), letter focus-pull reveals, magnetic buttons, and reduced-motion fallbacks (no intro, grain, curtain or WebGL).
 - Supabase-backed bilingual content, all editable from the panel.
 
 ## Editing the website (panel)

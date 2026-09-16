@@ -602,6 +602,12 @@ export function WorkEditor({
                 label="Visible en la web"
                 hint={w.published ? "Se publica al guardar." : "Borrador: solo lo ves tú."}
               />
+              <Switch
+                checked={w.featured}
+                onChange={(featured) => set("featured", featured)}
+                label="Destacar en la portada"
+                hint="Aparece en la tira de trabajos de la página de inicio."
+              />
             </div>
             <LaptopPreview src={w.gallery[0] || w.cover} />
             <div className="preview-meta">

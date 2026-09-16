@@ -8,13 +8,14 @@ export function WorkCards({ works, locale }: { works: Work[]; locale: Locale }) 
   return (
     <div className="work-cards">
       {works.map((w) => (
-        <article key={w.id} className="work-card" data-reveal>
+        <article key={w.id} className="work-card">
           <Link
             href={"/" + locale + "/work/" + w.slug}
             className="work-card-link"
             data-cursor={t.view}
+            data-label={w.title}
           >
-            <div className="work-card-media">
+            <div className="work-card-media" data-wipe>
               <div className="work-card-drift" data-parallax="5">
                 <Media
                   src={workCover(w)}

@@ -2,7 +2,7 @@ import { pageMetadata } from "@/lib/server/metadata";
 import { getContent } from "@/lib/server/content";
 import { text, copy, type Locale } from "@/lib/content";
 import { Arrow } from "@/components/icon";
-import { Lines } from "@/components/text";
+import { Chars } from "@/components/text";
 export default async function Contact({ params }: { params: Promise<{ lang: Locale }> }) {
   const { lang } = await params;
   const { settings: s } = await getContent();
@@ -15,8 +15,8 @@ export default async function Contact({ params }: { params: Promise<{ lang: Loca
             {t.contact} / {s.brand}
           </span>
         </div>
-        <h1 className="display" data-lines>
-          <Lines text={text(s.contactTitle, lang)} italicLast />
+        <h1 className="display" data-chars>
+          <Chars text={text(s.contactTitle, lang)} italicLast />
         </h1>
         <div className="page-hero-meta">
           <p className="lead" data-reveal>

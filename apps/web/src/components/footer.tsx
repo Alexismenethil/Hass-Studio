@@ -1,7 +1,8 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Arrow } from "./icon";
-import { Lines } from "./text";
+import { Chars } from "./text";
+import { Sun } from "./cinema";
 import { text, copy, type Settings, type Locale } from "@/lib/content";
 export function Footer({
   settings,
@@ -18,18 +19,27 @@ export function Footer({
         <div className="footer-head">
           {settings.portrait && (
             <span className="footer-avatar">
-              <Image src={settings.portrait} fill sizes="72px" alt="" />
+              <Image src={settings.portrait} fill sizes="92px" alt="" />
             </span>
           )}
-          <h2>
-            <Lines text={text(settings.contactTitle, locale)} italicLast />
+          <h2 data-chars>
+            <Chars text={text(settings.contactTitle, locale)} italicLast />
           </h2>
         </div>
-        <div className="footer-rule">
+        <div className="footer-horizon">
+          <div className="footer-sky" aria-hidden="true">
+            <span className="footer-glow" />
+            <span className="footer-rise">
+              <span className="footer-disc" />
+              <Sun className="footer-sun" />
+            </span>
+          </div>
+          <span className="footer-sea" aria-hidden="true" />
           <Link
             className="footer-orb"
             href={"/" + locale + "/contact"}
             data-magnetic="0.35"
+            data-label={t.contact}
           >
             <span>{t.hello}</span>
           </Link>
