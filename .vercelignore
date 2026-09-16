@@ -14,4 +14,8 @@ node_modules
 **/node_modules
 .next
 **/.next
+.turbo
+**/.turbo
+.claude
+**/.claude
 .git
