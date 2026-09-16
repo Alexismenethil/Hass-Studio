@@ -1,0 +1,14 @@
+{
+  "name": "@hass/branding",
+  "private": true,
+  "version": "0.1.0",
+  "exports": {
+    ".": "./src/index.tsx"
+  },
+  "peerDependencies": {
+    "react": ">=19"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.0"
+  }
+}

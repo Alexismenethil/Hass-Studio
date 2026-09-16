@@ -1,0 +1,17 @@
+assets/originals
+docs
+.codex
+.agents
+**/*.test.ts
+**/*.tsbuildinfo
+.pnpm-store
+output
+.env*
+**/.env*
+.vercel
+**/.vercel
+node_modules
+**/node_modules
+.next
+**/.next
+.git

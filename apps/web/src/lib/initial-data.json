@@ -1,0 +1,224 @@
+{
+  "settings": {
+    "brand": "HASS Studio",
+    "name": "Alexis Huamani Rivera",
+    "email": "",
+    "whatsapp": "",
+    "logo": "",
+    "portrait": "",
+    "heroImage": "/images/coast.webp",
+    "detailImage": "/images/olive.webp",
+    "studioImage": "/images/courtyard.webp",
+    "availability": {
+      "en": "Independent design & development",
+      "es": "Diseño y desarrollo independiente"
+    },
+    "heroEyebrow": {
+      "en": "Thoughtfully designed. Carefully built.",
+      "es": "Diseñado con intención. Creado con cuidado."
+    },
+    "heroTitle": {
+      "en": "A feeling.\nMade digital.",
+      "es": "Una sensación.\nHecha digital."
+    },
+    "heroDescription": {
+      "en": "Distinctive websites and digital experiences.\nWhere thoughtful design meets considered engineering.",
+      "es": "Webs y experiencias digitales con carácter.\nDonde el diseño se une a la ingeniería."
+    },
+    "introEyebrow": {
+      "en": "The art of making it feel right",
+      "es": "El arte de hacerlo sentir bien"
+    },
+    "introTitle": {
+      "en": "Good design is seen.\nGreat design is felt.",
+      "es": "El buen diseño se ve.\nEl gran diseño se siente."
+    },
+    "introText": {
+      "en": "HASS is an independent digital studio by Alexis Huamani Rivera. I bring a design-first perspective to websites, internal systems and mobile experiences — making the complex feel beautifully simple.",
+      "es": "HASS es el estudio digital independiente de Alexis Huamani Rivera. El diseño guía cada web, sistema interno y aplicación móvil que construyo: hacer que lo complejo se sienta simple."
+    },
+    "workTitle": {
+      "en": "Digital worlds,\nwith a human touch.",
+      "es": "Mundos digitales,\ncon un toque humano."
+    },
+    "studioTitle": {
+      "en": "A curious mind.\nA considered approach.",
+      "es": "Una mente curiosa.\nUna mirada cuidadosa."
+    },
+    "studioText": {
+      "en": "I'm Alexis. Designer in spirit, developer by craft. My work moves between websites, internal tools and mobile applications, always beginning with how an experience should feel.\n\nI care about the details people notice — and the ones they simply feel. The space around a word. The rhythm of a transition. An interface that makes sense from the first touch.",
+      "es": "Soy Alexis. Diseñador de espíritu, desarrollador de oficio. Mi trabajo conecta páginas web, herramientas internas y aplicaciones móviles, siempre empezando por cómo debe sentirse una experiencia.\n\nMe importan los detalles que se ven y los que se sienten. El espacio alrededor de una palabra. El ritmo de una transición. Una interfaz que se entiende al primer toque."
+    },
+    "contactTitle": {
+      "en": "Something good\nstarts with a hello.",
+      "es": "Algo bueno\nempieza con un hola."
+    },
+    "contactText": {
+      "en": "Have an idea, a challenge, or a world to bring to life? Let's make something worth experiencing.",
+      "es": "¿Tienes una idea, un reto o un mundo por crear? Hagamos algo que merezca ser vivido."
+    },
+    "socials": [],
+    "seoTitle": {
+      "en": "HASS Studio — Design with feeling.",
+      "es": "HASS Studio — Diseño que se siente."
+    },
+    "seoDescription": {
+      "en": "Independent design and development by Alexis Huamani Rivera. Thoughtful websites, internal systems and mobile experiences.",
+      "es": "Diseño y desarrollo independiente por Alexis Huamani Rivera. Webs, sistemas internos y aplicaciones móviles con intención."
+    },
+    "heroMobileImage": "/images/coast-mobile.webp",
+    "interludeTitle": {
+      "en": "Every detail.\nA little more feeling.",
+      "es": "Cada detalle.\nUn poco más de emoción."
+    },
+    "interludeRibbon": {
+      "en": "Thoughtfully designed. Carefully built.",
+      "es": "Diseñado con intención. Creado con cuidado."
+    }
+  },
+  "categories": [
+    {
+      "id": "websites",
+      "title": {
+        "en": "Web experiences",
+        "es": "Experiencias web"
+      },
+      "description": {
+        "en": "A first impression.\nA lasting feeling.",
+        "es": "Una primera impresión.\nUna sensación que permanece."
+      },
+      "image": "/images/courtyard.webp",
+      "kind": "website",
+      "services": {
+        "en": "Art direction · UI/UX · Development",
+        "es": "Dirección de arte · UI/UX · Desarrollo"
+      },
+      "sort_order": 0
+    },
+    {
+      "id": "systems",
+      "title": {
+        "en": "Internal systems",
+        "es": "Sistemas internos"
+      },
+      "description": {
+        "en": "Complex behind the scenes.\nEffortless in your hands.",
+        "es": "Complejos por dentro.\nSimples en tus manos."
+      },
+      "image": "/images/olive.webp",
+      "kind": "dashboard",
+      "services": {
+        "en": "Product design · Workflows · Engineering",
+        "es": "Diseño de producto · Procesos · Ingeniería"
+      },
+      "sort_order": 1
+    },
+    {
+      "id": "mobile",
+      "title": {
+        "en": "Mobile applications",
+        "es": "Aplicaciones móviles"
+      },
+      "description": {
+        "en": "Small screen.\nEndless possibilities.",
+        "es": "Una pequeña pantalla.\nPosibilidades infinitas."
+      },
+      "image": "/images/coast.webp",
+      "kind": "mobile",
+      "services": {
+        "en": "Interaction design · Mobile development",
+        "es": "Diseño de interacción · Desarrollo móvil"
+      },
+      "sort_order": 2
+    }
+  ],
+  "works": [
+    {
+      "id": "11111111-1111-4111-8111-111111111111",
+      "slug": "casa-oliva",
+      "title": "Casa Oliva",
+      "category_id": "websites",
+      "year": 2026,
+      "cover": "/images/courtyard.webp",
+      "video": "",
+      "url": "",
+      "description": {
+        "en": "An exploration of quiet hospitality. An editorial website concept inspired by natural materials, soft light and a slower pace.",
+        "es": "Una exploración de la hospitalidad serena. Un concepto web editorial inspirado en materiales naturales, luz suave y un ritmo pausado."
+      },
+      "challenge": {
+        "en": "Translate the atmosphere of a place into a digital experience that invites you to stay.",
+        "es": "Traducir la atmósfera de un lugar a una experiencia digital que invite a quedarse."
+      },
+      "approach": {
+        "en": "Generous typography, tactile imagery and a considered visual rhythm. A study in how little an interface needs to say when the composition speaks.",
+        "es": "Tipografía amplia, imágenes con textura y un ritmo visual cuidado. Un estudio de lo poco que necesita decir una interfaz cuando la composición comunica."
+      },
+      "services": ["Art direction", "UI/UX design", "Creative development"],
+      "gallery": ["/images/coast.webp", "/images/olive.webp"],
+      "featured": true,
+      "published": true,
+      "concept": true,
+      "kind": "website",
+      "sort_order": 0
+    },
+    {
+      "id": "22222222-2222-4222-8222-222222222222",
+      "slug": "forma",
+      "title": "Forma",
+      "category_id": "systems",
+      "year": 2026,
+      "cover": "/images/olive.webp",
+      "video": "",
+      "url": "",
+      "description": {
+        "en": "A visual study for a calmer workspace. Clear information, considered interactions and room to focus.",
+        "es": "Un estudio visual para trabajar con calma. Información clara, interacciones cuidadas y espacio para concentrarse."
+      },
+      "challenge": {
+        "en": "Give everyday work the same attention to design as a public-facing website.",
+        "es": "Dar al trabajo diario la misma atención de diseño que a una web pública."
+      },
+      "approach": {
+        "en": "A restrained palette, precise hierarchy and a focused overview. Every element has a clear purpose.",
+        "es": "Una paleta contenida, jerarquía precisa y una vista general enfocada. Cada elemento tiene un propósito."
+      },
+      "services": ["Product design", "UI/UX", "Design systems"],
+      "gallery": ["/images/courtyard.webp"],
+      "featured": true,
+      "published": true,
+      "concept": true,
+      "kind": "dashboard",
+      "sort_order": 1
+    },
+    {
+      "id": "33333333-3333-4333-8333-333333333333",
+      "slug": "savia",
+      "title": "Savia",
+      "category_id": "mobile",
+      "year": 2026,
+      "cover": "/images/coast.webp",
+      "video": "",
+      "url": "",
+      "description": {
+        "en": "A mobile interface study shaped by nature. A little space to pause, discover and reconnect.",
+        "es": "Un estudio de interfaz móvil inspirado en la naturaleza. Un espacio para pausar, descubrir y reconectar."
+      },
+      "challenge": {
+        "en": "Bring a feeling of openness and calm into a compact mobile experience.",
+        "es": "Llevar una sensación de apertura y calma a una experiencia móvil compacta."
+      },
+      "approach": {
+        "en": "Immersive photography, accessible controls and simple navigation form a gentle everyday companion.",
+        "es": "Fotografía inmersiva, controles accesibles y navegación simple para una experiencia cotidiana amable."
+      },
+      "services": ["Mobile design", "Interaction design"],
+      "gallery": ["/images/olive.webp"],
+      "featured": true,
+      "published": true,
+      "concept": true,
+      "kind": "mobile",
+      "sort_order": 2
+    }
+  ]
+}
