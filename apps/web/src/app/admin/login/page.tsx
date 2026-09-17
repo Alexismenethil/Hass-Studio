@@ -1,13 +1,18 @@
 import Link from "next/link";
-import Image from "next/image";
 import { configured } from "@/lib/server/supabase";
+import { getContent } from "@/lib/server/content";
+import { Media } from "@/components/media";
 import { LoginForm } from "./login-form";
-export default function Login() {
+export default async function Login() {
   const ready = configured();
+  // The panel greets you with the website's own photograph, whatever it is today.
+  const image = await getContent()
+    .then(({ settings }) => settings.detailImage || settings.heroImage)
+    .catch(() => "");
   return (
     <main className="login-page">
       <div className="login-image">
-        <Image src="/images/olive.webp" fill sizes="50vw" alt="" />
+        {image && <Media src={image} sizes="50vw" priority />}
         <span>
           HASS
           <br />

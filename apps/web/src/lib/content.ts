@@ -31,9 +31,11 @@ export const mediaUrl = z.string().refine(
         const u = new URL(v);
         return (
           u.protocol === "https:" &&
-          u.hostname.endsWith(".supabase.co") &&
           !u.username &&
-          !u.password
+          !u.password &&
+          (u.hostname.endsWith(".supabase.co") ||
+            (u.hostname === "res.cloudinary.com" &&
+              /^\/[\w-]+\/(image|video)\/upload\//.test(u.pathname)))
         );
       } catch {
         return false;
@@ -52,6 +54,8 @@ export const settingsSchema = z.object({
   heroImage: mediaUrl,
   detailImage: mediaUrl,
   studioImage: mediaUrl,
+  // Added after launch: saved settings without it read as empty.
+  contactImage: mediaUrl.default(""),
   interludeTitle: bi,
   interludeRibbon: bi,
   availability: bi,
@@ -107,10 +111,51 @@ export const workSchema = z.object({
   kind: z.enum(["website", "dashboard", "mobile"]),
   sort_order: z.number().int().min(0),
 });
+/** A message from the contact form. `website` is a trap field that people never see. */
+export const contactSchema = z.object({
+  name: z.string().trim().min(2).max(80),
+  email: z.email().max(160),
+  phone: z
+    .string()
+    .trim()
+    .max(30)
+    .regex(/^[+0-9 ()-]*$/),
+  service: z.string().trim().max(80),
+  message: z.string().trim().min(10).max(3000),
+  locale: z.enum(["en", "es"]),
+  website: z.string().max(200),
+  startedAt: z.number(),
+});
+export type ContactMessage = z.infer<typeof contactSchema>;
+export const whatsappLink = (number: string, message = "") =>
+  "https://wa.me/" + number.replace(/\D/g, "") + (message ? "?text=" + encodeURIComponent(message) : "");
 export type Settings = z.infer<typeof settingsSchema>;
 export type Category = z.infer<typeof categorySchema>;
 export type Work = z.infer<typeof workSchema>;
-export const isVideo = (url: string) => /\.(mp4|webm)(?:[?#]|$)/i.test(url);
+const cloudinary = /^https:\/\/res\.cloudinary\.com\/([\w-]+)\/(image|video)\/upload\/(.+)$/;
+export const isVideo = (url: string) =>
+  /\.(mp4|webm|mov|m4v)(?:[?#]|$)/i.test(url) ||
+  (/^https:\/\/res\.cloudinary\.com\/[\w-]+\/video\/upload\//.test(url) &&
+    !/\.(jpe?g|png|webp|avif)(?:[?#]|$)/i.test(url));
+export const isCloudinary = (url: string) => cloudinary.test(url);
+/** Cloudinary renditions. Uploads request the video ones eagerly, so large files are ready in time. */
+export const cloudinaryVideo = "c_limit,q_auto,w_1920";
+export const cloudinaryPoster = "c_limit,q_auto,so_0,w_1600";
+export const cloudinaryEager = cloudinaryVideo + "/mp4|" + cloudinaryPoster + "/jpg";
+export const cloudinaryUrl = (url: string, transformation: string, format?: string) => {
+  const match = url.match(cloudinary);
+  if (!match) return url;
+  const path = format ? match[3].replace(/\.[a-z0-9]+$/i, "") + "." + format : match[3];
+  return `https://res.cloudinary.com/${match[1]}/${match[2]}/upload/${transformation}/${path}`;
+};
+/** A light MP4 for any uploaded video (other hosts are served as uploaded). */
+export const videoSource = (url: string) =>
+  isCloudinary(url) ? cloudinaryUrl(url, cloudinaryVideo, "mp4") : url;
+/** First frame of a Cloudinary video as an image, or "" when none can be made. */
+export const videoPoster = (url: string) =>
+  isCloudinary(url) && isVideo(url) ? cloudinaryUrl(url, cloudinaryPoster, "jpg") : "";
+/** A still that represents any media: the image itself or a video's first frame. */
+export const stillOf = (url: string) => (isVideo(url) ? videoPoster(url) : url);
 /** Screens shown inside the laptop, in order. Legacy single videos come first. */
 export const workMedia = (w: Pick<Work, "video" | "gallery" | "cover">) => {
   const list = [...(w.video ? [w.video] : []), ...w.gallery].filter(Boolean);
@@ -152,6 +197,10 @@ export const copy = {
     year: "Year",
     scope: "Scope",
     screen: "Screen",
+    screens: "screens",
+    explore: "Explore",
+    exploreProject: "Explore the project",
+    liveSite: "Live site",
     concept: "Design study",
     challenge: "The challenge",
     approach: "The approach",
@@ -170,6 +219,28 @@ export const copy = {
     play: "Play video",
     pause: "Pause video",
     local: "Local time",
+    direct: "Direct contact",
+    writeWhatsapp: "WhatsApp",
+    sendEmail: "Email",
+    formTitle: "Tell me about your idea",
+    replyTime: "I reply within 24 hours",
+    yourName: "Name",
+    yourEmail: "Email",
+    yourService: "Service",
+    chooseService: "Choose a service",
+    other: "Something else",
+    yourMessage: "Description",
+    messageHint: "What would you like to build, and for when?",
+    send: "Send message",
+    sending: "Sending…",
+    orWhatsapp: "or message me on WhatsApp",
+    sentTitle: "Message received",
+    sentThanks: "Thank you",
+    sentText: "I'll write back very soon to",
+    again: "Send another message",
+    formError: "The message could not be sent right now. You can write to me directly:",
+    formRetry: "The message could not be sent right now. Please try again in a moment.",
+    checkFields: "Add your name, a valid email and a few words about your idea.",
   },
   es: {
     work: "Proyectos",
@@ -191,6 +262,10 @@ export const copy = {
     year: "Año",
     scope: "Alcance",
     screen: "Pantalla",
+    screens: "pantallas",
+    explore: "Explorar",
+    exploreProject: "Explorar el proyecto",
+    liveSite: "Sitio en vivo",
     concept: "Estudio de diseño",
     challenge: "El reto",
     approach: "El enfoque",
@@ -209,5 +284,27 @@ export const copy = {
     play: "Reproducir vídeo",
     pause: "Pausar vídeo",
     local: "Hora local",
+    direct: "Contacto directo",
+    writeWhatsapp: "WhatsApp",
+    sendEmail: "Email",
+    formTitle: "Cuéntame tu idea",
+    replyTime: "Respondo en menos de 24 horas",
+    yourName: "Nombre",
+    yourEmail: "Email",
+    yourService: "Servicio",
+    chooseService: "Elige un servicio",
+    other: "Otra cosa",
+    yourMessage: "Descripción",
+    messageHint: "¿Qué te gustaría crear y para cuándo?",
+    send: "Enviar mensaje",
+    sending: "Enviando…",
+    orWhatsapp: "o escríbeme por WhatsApp",
+    sentTitle: "Mensaje recibido",
+    sentThanks: "Gracias",
+    sentText: "Te respondo muy pronto a",
+    again: "Enviar otro mensaje",
+    formError: "No se pudo enviar el mensaje ahora. Puedes escribirme directamente:",
+    formRetry: "No se pudo enviar el mensaje ahora. Inténtalo de nuevo en un momento.",
+    checkFields: "Añade tu nombre, un email válido y unas palabras sobre tu idea.",
   },
 } as const;

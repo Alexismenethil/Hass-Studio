@@ -1,6 +1,6 @@
 "use client";
-import { getImageProps } from "next/image";
-import { isVideo } from "@/lib/content";
+import { isVideo, videoSource } from "@/lib/content";
+import { fallBack, imageSource } from "@/lib/media";
 
 export const VERTEX = `
 attribute vec2 position;
@@ -126,7 +126,8 @@ export function createRenderer(canvas: HTMLCanvasElement, fragment: string) {
       video.loop = true;
       video.playsInline = true;
       video.preload = "auto";
-      video.src = src;
+      video.src = videoSource(src);
+      video.addEventListener("error", () => fallBack(video, src));
       tex.video = video;
       video.addEventListener("loadeddata", () => upload(video, video.videoWidth, video.videoHeight));
       (tex as Texture & { refresh: () => void }).refresh = () => {
@@ -135,6 +136,7 @@ export function createRenderer(canvas: HTMLCanvasElement, fragment: string) {
     } else {
       const image = new Image();
       image.decoding = "async";
+      image.crossOrigin = "anonymous";
       image.onload = () => upload(image, image.naturalWidth, image.naturalHeight);
       image.src = optimized(src);
     }
@@ -182,8 +184,5 @@ export function createRenderer(canvas: HTMLCanvasElement, fragment: string) {
   };
 }
 
-/** Same-origin, resized image URL so textures stay light and CORS-free. */
-export const optimized = (src: string) =>
-  src.startsWith("/_next/")
-    ? src
-    : getImageProps({ src, alt: "", width: 1000, height: 640, quality: 75 }).props.src;
+/** Resized image URL so textures stay light: same origin, or Cloudinary (which allows CORS). */
+export const optimized = (src: string) => imageSource(src, 1000, 640);

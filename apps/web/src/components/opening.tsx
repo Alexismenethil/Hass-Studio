@@ -5,6 +5,7 @@ import { createRenderer, type Texture } from "./gl/gl";
 import { Chars } from "./text";
 import { Sun } from "./cinema";
 import { copy, isVideo, lines, type Locale } from "@/lib/content";
+import { loaderFor, videoProps } from "@/lib/media";
 import { clamp, easeInOut, easeOut, mix, span, useScene } from "@/lib/scene";
 
 /** Mediterranean light: leaf shadows drifting over the photograph, a warm sun under the pointer. */
@@ -80,11 +81,11 @@ export function Opening({ image, mobileImage, title, sub, eyebrow, statement, al
 
   const still = !isVideo(image) && image;
   const desktop = still
-    ? getImageProps({ src: image, alt, width: 1920, height: 1080, sizes: "100vw", quality: 75, loading: "eager", fetchPriority: "high" }).props
+    ? getImageProps({ src: image, alt, width: 1920, height: 1080, sizes: "100vw", quality: 75, loading: "eager", fetchPriority: "high", ...loaderFor(image) }).props
     : null;
   const mobile =
     mobileImage && !isVideo(mobileImage)
-      ? getImageProps({ src: mobileImage, alt, width: 900, height: 1600, sizes: "100vw", quality: 75 }).props
+      ? getImageProps({ src: mobileImage, alt, width: 900, height: 1600, sizes: "100vw", quality: 75, ...loaderFor(mobileImage) }).props
       : null;
 
   useEffect(() => {
@@ -105,7 +106,7 @@ export function Opening({ image, mobileImage, title, sub, eyebrow, statement, al
     const r = createRenderer(surface, LIGHT);
     renderer.current = r;
     if (r) {
-      const narrow = window.innerWidth < 768 && mobileImage && !isVideo(mobileImage);
+      const narrow = window.innerWidth < 768 && !!mobileImage;
       texture.current = r.texture(narrow ? mobileImage : image, () => {
         live.current.readyAt = performance.now();
         surface.classList.add("is-ready");
@@ -199,7 +200,7 @@ export function Opening({ image, mobileImage, title, sub, eyebrow, statement, al
                 <img {...desktop} alt={alt} />
               </picture>
             ) : (
-              image && <video src={image} muted loop playsInline autoPlay aria-label={alt} />
+              image && <video {...videoProps(image)} muted loop playsInline autoPlay aria-label={alt} />
             )}
             <canvas ref={canvas} className="opening-gl" aria-hidden="true" />
           </div>

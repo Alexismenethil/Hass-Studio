@@ -1,8 +1,8 @@
 import Link from "next/link";
-import Image from "next/image";
-import { Arrow } from "./icon";
+import { Arrow, SocialIcon } from "./icon";
 import { Chars } from "./text";
 import { Sun } from "./cinema";
+import { Media } from "./media";
 import { text, copy, type Settings, type Locale } from "@/lib/content";
 export function Footer({
   settings,
@@ -19,7 +19,7 @@ export function Footer({
         <div className="footer-head">
           {settings.portrait && (
             <span className="footer-avatar">
-              <Image src={settings.portrait} fill sizes="92px" alt="" />
+              <Media src={settings.portrait} sizes="92px" />
             </span>
           )}
           <h2 data-chars>
@@ -44,23 +44,6 @@ export function Footer({
             <span>{t.hello}</span>
           </Link>
         </div>
-        <div className="footer-pills">
-          {settings.email && (
-            <a className="pill pill-ghost" href={"mailto:" + settings.email}>
-              {settings.email}
-            </a>
-          )}
-          {settings.whatsapp && (
-            <a
-              className="pill pill-ghost"
-              href={"https://wa.me/" + settings.whatsapp.replace(/\D/g, "")}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              WhatsApp · {settings.whatsapp}
-            </a>
-          )}
-        </div>
         <div className="footer-bottom">
           <div>
             <small>{settings.brand}</small>
@@ -72,11 +55,20 @@ export function Footer({
             <small>Socials</small>
             <span>
               {settings.socials.map((s) => (
-                <a key={s.label} href={s.url} target="_blank" rel="noopener noreferrer">
-                  {s.label}
+                <a
+                  key={s.url || s.label}
+                  className="footer-social"
+                  href={s.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={s.label}
+                  title={s.label}
+                  data-magnetic="0.35"
+                >
+                  <SocialIcon url={s.url} />
                 </a>
               ))}
-              <Link href={"/" + locale + "/links"}>
+              <Link className="footer-links" href={"/" + locale + "/links"}>
                 Links <Arrow diagonal />
               </Link>
             </span>

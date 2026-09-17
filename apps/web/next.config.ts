@@ -3,7 +3,10 @@ const config: NextConfig = {
   devIndicators: false,
   transpilePackages: ["@hass/branding", "@hass/emails"],
   images: {
-    remotePatterns: [{ protocol: "https", hostname: "**.supabase.co" }],
+    remotePatterns: [
+      { protocol: "https", hostname: "**.supabase.co" },
+      { protocol: "https", hostname: "res.cloudinary.com" },
+    ],
   },
   async headers() {
     return [

@@ -5,6 +5,7 @@ import { usePathname, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { Arrow } from "./icon";
 import { copy, type Locale, type Settings } from "@/lib/content";
+import { loaderFor } from "@/lib/media";
 export function SiteNav({
   locale,
   settings,
@@ -84,7 +85,7 @@ export function SiteNav({
           aria-label={settings.brand + " " + t.home}
         >
           {settings.logo ? (
-            <Image src={settings.logo} width={110} height={46} alt={settings.brand} />
+            <Image src={settings.logo} {...loaderFor(settings.logo)} width={110} height={46} alt={settings.brand} />
           ) : (
             <>
               <span>HASS</span>

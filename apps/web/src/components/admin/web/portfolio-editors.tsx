@@ -530,7 +530,7 @@ export function WorkEditor({
                 <b>Captura de móvil</b> se centra sobre un fondo difuminado.
               </li>
               <li>
-                <b>Vídeo MP4 o WebM</b> se reproduce en bucle y sin sonido. Máximo 50 MB.
+                <b>Vídeo MP4, WebM o MOV</b> se reproduce en bucle y sin sonido, optimizado automáticamente. Máximo 100 MB.
               </li>
             </ul>
             {!w.gallery.length && w.cover && (
@@ -544,7 +544,7 @@ export function WorkEditor({
           >
             <div className="kit-row">
               <MediaPicker
-                label="Miniatura (opcional)"
+                label="Miniatura: foto o vídeo (opcional)"
                 kind="media"
                 ratio="4 / 3"
                 value={w.cover}

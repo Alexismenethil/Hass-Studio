@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { getContent } from "@/lib/server/content";
-import { text, type Locale } from "@/lib/content";
+import { stillOf, text, type Locale } from "@/lib/content";
 import { SiteNav } from "@/components/site-nav";
 import { Footer } from "@/components/footer";
 import { Motion } from "@/components/motion";
@@ -25,9 +25,9 @@ export async function generateMetadata({
     openGraph: {
       title: text(settings.seoTitle, lang),
       description: text(settings.seoDescription, lang),
-      images: [settings.heroImage],
+      images: [stillOf(settings.heroImage)].filter(Boolean),
     },
-    twitter: { card: "summary_large_image", images: [settings.heroImage] },
+    twitter: { card: "summary_large_image", images: [stillOf(settings.heroImage)].filter(Boolean) },
   };
 }
 export default async function Layout({

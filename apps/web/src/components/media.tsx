@@ -2,6 +2,7 @@
 import Image from "next/image";
 import { useEffect, useRef } from "react";
 import { isVideo } from "@/lib/content";
+import { loaderFor, videoProps } from "@/lib/media";
 
 /** An uploaded image or an MP4/WebM loop that only plays while visible. */
 export function Media({
@@ -38,7 +39,7 @@ export function Media({
     <video
       ref={video}
       className={"media " + className}
-      src={src}
+      {...videoProps(src)}
       muted
       loop
       playsInline
@@ -50,6 +51,7 @@ export function Media({
     <Image
       className={"media " + className}
       src={src}
+      {...loaderFor(src)}
       alt={alt}
       fill
       sizes={sizes}

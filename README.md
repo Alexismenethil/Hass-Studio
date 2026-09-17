@@ -65,9 +65,15 @@ Set RESEND_API_KEY and EMAIL_FROM only on the server. A verified sender domain i
 
 Updates are saved first. Sending claims the saved update atomically, persists an immutable email snapshot, then calls Resend using an idempotency key derived from the update UUID. Explicit provider rejections become FAILED. Ambiguous failures remain PENDING and can be retried after two minutes within a 23-hour safety window. After that, verify delivery with the provider before deciding on a new update. SENT means accepted by the provider, not confirmed inbox delivery. Files use signed links that expire after seven days.
 
+## Contact form
+
+The Contact page sets a short form (name, email, a service dropdown built from the services, description) over the studio image, next to WhatsApp, email and social links. A "o escríbeme por WhatsApp" link opens WhatsApp with the message already written. /api/contact validates the message, ignores automated senders (hidden trap field and a minimum typing time), limits repeated sends, and emails it through Resend to CONTACT_EMAIL, or to the public email saved in the panel. Replying to that email answers the visitor. It needs RESEND_API_KEY; without a verified domain, EMAIL_FROM can be left empty and Resend's onboarding sender delivers only to the address that owns the Resend account.
+
 ## Files and video
 
-Uploads go directly to Supabase Storage. Public assets use public-media; client updates use the private client-files bucket. Files larger than 6 MB use resumable upload. Limit: 50 MB per file; MP4/WebM, JPEG/PNG/WebP/AVIF, and PDF for client attachments. For best results, compress web videos before uploading and choose a useful poster/cover image.
+Every photo field in the panel also accepts a video. With NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY and CLOUDINARY_API_SECRET set, public photos and videos upload straight from the browser to Cloudinary (folder hass-studio) with a signature made by /api/admin/upload, so the secret never reaches the browser. Videos (MP4, WebM or MOV, up to 100 MB) travel in 20 MB pieces and get a light 1920 px MP4 and a poster prepared at upload; the site serves those renditions and falls back to the original file while they are being prepared. Images up to 10 MB are resized and served in the best format by Cloudinary. The API key needs upload permission (Cloudinary Console → Settings → API Keys); if Cloudinary is missing or refuses the key, the panel falls back to Supabase Storage.
+
+Supabase Storage still holds private client files (client-files bucket) and the fallback public uploads (public-media). Files larger than 6 MB use resumable upload. Limit: 50 MB per file; MP4/WebM, JPEG/PNG/WebP/AVIF, and PDF for client attachments.
 
 The current laptop frame is laptop-frontal.webp; laptop-navy.png is a discarded earlier art-direction variant retained only among originals. Generated originals: assets/originals. Optimized web files: apps/web/public/images. Prompt set and generation method: docs/IMAGE-PROMPTS.md. The sample interfaces are original design studies; replace them from Portfolio and disable Concepto / estudio visual for real screenshots.
 

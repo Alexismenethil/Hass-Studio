@@ -2,13 +2,14 @@
   "settings": {
     "brand": "HASS Studio",
     "name": "Alexis Huamani Rivera",
-    "email": "",
-    "whatsapp": "",
+    "email": "alexishr005@gmail.com",
+    "whatsapp": "+51 917 785 052",
     "logo": "",
     "portrait": "",
     "heroImage": "/images/coast.webp",
     "detailImage": "/images/olive.webp",
     "studioImage": "/images/courtyard.webp",
+    "contactImage": "",
     "availability": {
       "en": "Independent design & development",
       "es": "Diseño y desarrollo independiente"
@@ -57,7 +58,20 @@
       "en": "Have an idea, a challenge, or a world to bring to life? Let's make something worth experiencing.",
       "es": "¿Tienes una idea, un reto o un mundo por crear? Hagamos algo que merezca ser vivido."
     },
-    "socials": [],
+    "socials": [
+      {
+        "label": "Instagram",
+        "url": "https://www.instagram.com/alexis_assl"
+      },
+      {
+        "label": "LinkedIn",
+        "url": "https://www.linkedin.com/in/alexis-huaman%C3%AD-rivera-67a891274/"
+      },
+      {
+        "label": "Facebook",
+        "url": "https://www.facebook.com/alexis.huamanirivera"
+      }
+    ],
     "seoTitle": {
       "en": "HASS Studio — Design with feeling.",
       "es": "HASS Studio — Diseño que se siente."

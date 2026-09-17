@@ -849,6 +849,13 @@
   min-height: 100svh;
   color: white;
 }
+.login-image .media {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
 .login-image:after {
   position: absolute;
   content: "";

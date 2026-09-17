@@ -1,63 +1,78 @@
 import { pageMetadata } from "@/lib/server/metadata";
 import { getContent } from "@/lib/server/content";
-import { text, copy, type Locale } from "@/lib/content";
-import { Arrow } from "@/components/icon";
+import { text, copy, whatsappLink, type Locale } from "@/lib/content";
+import { SocialIcon } from "@/components/icon";
 import { Chars } from "@/components/text";
+import { Media } from "@/components/media";
+import { ContactForm, LocalTime } from "@/components/contact-form";
+
 export default async function Contact({ params }: { params: Promise<{ lang: Locale }> }) {
   const { lang } = await params;
-  const { settings: s } = await getContent();
+  const { settings: s, categories } = await getContent();
   const t = copy[lang];
+  const direct = [
+    s.whatsapp && { href: whatsappLink(s.whatsapp), label: t.writeWhatsapp, external: true },
+    s.email && { href: "mailto:" + s.email, label: t.sendEmail, external: false },
+  ].filter((x) => !!x);
   return (
     <main id="main" className="contact-main">
-      <section className="page-hero" data-header="light">
-        <div className="page-hero-top" data-reveal>
-          <span className="eyebrow">
-            {t.contact} / {s.brand}
-          </span>
+      <section className="contact-hero" data-header="dark">
+        <div className="contact-bg" aria-hidden="true">
+          <Media src={s.contactImage || s.studioImage || s.heroImage} sizes="100vw" priority />
         </div>
-        <h1 className="display" data-chars>
-          <Chars text={text(s.contactTitle, lang)} italicLast />
-        </h1>
-        <div className="page-hero-meta">
-          <p className="lead" data-reveal>
+
+        <div className="contact-intro">
+          <div className="contact-meta" data-reveal>
+            <span className="contact-status">
+              <i /> {text(s.availability, lang)}
+            </span>
+            <LocalTime locale={lang} label={t.local} />
+          </div>
+          <h1 className="display" data-chars>
+            <Chars text={text(s.contactTitle, lang)} italicLast />
+          </h1>
+          <p className="contact-lead" data-reveal>
             {text(s.contactText, lang)}
           </p>
+          <div className="contact-links" data-reveal="0.08">
+            {direct.map((item) => (
+              <a
+                key={item.href}
+                href={item.href}
+                aria-label={item.label}
+                data-magnetic="0.2"
+                {...(item.external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+              >
+                <SocialIcon url={item.href} />
+                {item.label}
+              </a>
+            ))}
+            {s.socials.map((x) => (
+              <a
+                key={x.url || x.label}
+                className="is-icon"
+                href={x.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={x.label}
+                title={x.label}
+                data-magnetic="0.35"
+              >
+                <SocialIcon url={x.url} />
+              </a>
+            ))}
+          </div>
+        </div>
+
+        <div className="contact-panel" data-reveal="0.12">
+          <ContactForm
+            locale={lang}
+            services={categories.map((c) => text(c.title, lang)).filter(Boolean)}
+            email={s.email}
+            whatsapp={s.whatsapp}
+          />
         </div>
       </section>
-      <div className="contact-links" data-header="light">
-        {s.email && (
-          <a className="contact-link" href={"mailto:" + s.email} data-reveal>
-            {s.email}
-            <Arrow diagonal />
-          </a>
-        )}
-        {s.whatsapp && (
-          <a
-            className="contact-link"
-            href={"https://wa.me/" + s.whatsapp.replace(/\D/g, "")}
-            target="_blank"
-            rel="noopener noreferrer"
-            data-reveal
-          >
-            WhatsApp
-            <Arrow diagonal />
-          </a>
-        )}
-        {s.socials.map((x) => (
-          <a
-            key={x.label}
-            className="contact-link"
-            href={x.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            data-reveal
-          >
-            {x.label}
-            <Arrow diagonal />
-          </a>
-        ))}
-        {!s.email && !s.whatsapp && !s.socials.length && <p className="muted">{t.soon}</p>}
-      </div>
     </main>
   );
 }

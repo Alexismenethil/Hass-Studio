@@ -1,75 +1,41 @@
 "use client";
-import { getImageProps } from "next/image";
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  type CSSProperties,
-  type ReactNode,
-} from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { copy, isVideo, pad, type Locale } from "@/lib/content";
+import { videoProps } from "@/lib/media";
+import { clamp, easeInOut, easeOut, span } from "@/lib/scene";
 import { Arrow } from "./icon";
+import { Laptop, OpeningLaptop, screenSource, useFits } from "./laptop";
+
+const FADE = 0.14;
 
 /**
- * cover: fills the display. contain: portrait screens (phones) float over a
- * blurred copy. scroll: full-page website captures travel inside the display.
+ * The scene plays by itself as soon as the page opens: the lights go down, the laptop
+ * rises and opens, the display wakes and the mirrors unfold. Scrolling then moves
+ * through the screens. Arriving from a project card (a "dive"), the laptop is already
+ * open under the transition, so only the mirrors unfold.
  */
-type Fit = "cover" | "contain" | "scroll";
-const FADE = 0.14;
-const clamp = (v: number, min = 0, max = 1) => Math.min(max, Math.max(min, v));
-const easeOut = (v: number) => 1 - Math.pow(1 - v, 3);
-const easeInOut = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
-
-const frame = (className = "laptop-frame") => (
-  <img
-    className={className}
-    src="/images/laptop-frontal.webp"
-    alt=""
-    width={1586}
-    height={992}
-    draggable={false}
-    decoding="async"
-  />
-);
-
-function Laptop({ children, className = "" }: { children: ReactNode; className?: string }) {
-  return (
-    <div className={"laptop " + className}>
-      {frame()}
-      <div className="laptop-screen">{children}</div>
-    </div>
-  );
-}
-
-/** The photographed laptop cut at its hinge, so the lid can open in 3D. */
-function OpeningLaptop({ children }: { children: ReactNode }) {
-  return (
-    <div className="laptop laptop-main">
-      <div className="laptop-lid">
-        <div className="laptop-lid-front">
-          {frame()}
-          <div className="laptop-screen">
-            {children}
-            <span className="screen-power" aria-hidden="true" />
-          </div>
-        </div>
-        <span className="laptop-lid-back" aria-hidden="true" />
-      </div>
-      <div className="laptop-base">{frame()}</div>
-    </div>
-  );
+function introAt(t: number, arrival: string | undefined, wing: number) {
+  if (arrival === "dive") return { dim: 1, rise: 1, lid: 1, power: 1, wing };
+  const power = span(t, 1.75, 2.35);
+  return {
+    dim: arrival === "curtain" ? 1 : easeInOut(span(t, 0, 1.1)),
+    rise: easeOut(span(t, 0.15, 1.7)),
+    lid: easeInOut(span(t, 0.6, 1.95)),
+    power,
+    wing: easeOut(span(t, 2, 3.4)),
+  };
 }
 
 export function MirrorStage({
   media,
   title,
+  eyebrow = "",
   locale,
   url = "",
 }: {
   media: string[];
   title: string;
+  eyebrow?: string;
   locale: Locale;
   url?: string;
 }) {
@@ -83,29 +49,10 @@ export function MirrorStage({
   const paused = useRef(false);
   const [active, setActive] = useState(0);
   const [isPaused, setPaused] = useState(false);
-  const [fits, setFits] = useState<Fit[]>(() => media.map(() => "cover"));
+  const [fits, detect] = useFits(count);
   // One optimized URL per image, shared by the display and every reflection.
-  const sources = useMemo(
-    () =>
-      media.map((src) =>
-        isVideo(src)
-          ? src
-          : getImageProps({ src, alt: "", width: 960, height: 600, quality: 75 })
-              .props.src,
-      ),
-    [media],
-  );
+  const sources = useMemo(() => media.map(screenSource), [media]);
   const hasVideo = media.some(isVideo);
-
-  const detect = useCallback((i: number, w: number, h: number, video: boolean) => {
-    if (!w || !h) return;
-    const ratio = h / w;
-    const fit: Fit =
-      !video && w >= 1360 && ratio > 0.8 ? "scroll" : ratio > 0.8 ? "contain" : "cover";
-    setFits((prev) => (prev[i] === fit ? prev : prev.map((f, k) => (k === i ? fit : f))));
-  }, []);
-
-  const introLength = () => window.innerHeight * (window.innerWidth < 760 ? 0.55 : 0.85);
 
   const go = useCallback(
     (index: number) => {
@@ -117,13 +64,8 @@ export function MirrorStage({
         return;
       }
       const total = el.offsetHeight - window.innerHeight;
-      const intro = Math.min(total, introLength());
       window.scrollTo({
-        top:
-          window.scrollY +
-          el.getBoundingClientRect().top +
-          intro +
-          ((total - intro) * (next + 0.5)) / count,
+        top: window.scrollY + el.getBoundingClientRect().top + (total * (next + 0.5)) / count,
         behavior: "smooth",
       });
     },
@@ -148,7 +90,21 @@ export function MirrorStage({
     const written = new Map<string, string>();
     const drawnAt = new Map<HTMLCanvasElement, number>();
     const opacity: number[] = media.map((_, i) => (i === 0 ? 1 : 0));
-    let a = -1;
+    // How this page was reached decides where the opening scene starts.
+    const html = document.documentElement;
+    const arrival = reduced.matches ? undefined : html.dataset.arrival;
+    const landed = arrival === "landed";
+    const mode = landed ? undefined : arrival;
+    let startAt = mode ? Infinity : performance.now() + (landed ? 0 : 250);
+    let wingAt = Infinity;
+    const arrive = () => {
+      const now = performance.now();
+      if (mode === "dive") wingAt = Math.min(wingAt, now);
+      // The curtain is already lifting: begin half a second into the scene.
+      else startAt = Math.min(startAt, now - 450);
+    };
+    window.addEventListener("hass:arrive", arrive);
+    const late = window.setTimeout(arrive, 2600);
     let q = -1;
     let current = -1;
     let frame = 0;
@@ -200,32 +156,29 @@ export function MirrorStage({
       el.style.setProperty(name, v);
     };
     const goal = () => {
-      if (reduced.matches) return { a: 1, q: chosen.current + 0.5 };
-      const vh = window.innerHeight;
-      const top = el.getBoundingClientRect().top;
-      const total = Math.max(0, el.offsetHeight - vh);
-      const intro = Math.min(total, introLength());
-      const travelled = clamp(-top, 0, total);
-      return {
-        a: intro > 0 ? clamp(-top / intro) : 1,
-        q: total - intro > 0 ? clamp((travelled - intro) / (total - intro)) * count : 0,
-      };
+      if (reduced.matches) return { q: chosen.current + 0.5, p: 0 };
+      const total = Math.max(0, el.offsetHeight - window.innerHeight);
+      const p = total > 0 ? clamp(-el.getBoundingClientRect().top / total) : 0;
+      return { q: p * count, p };
     };
     const tick = () => {
       const g = goal();
-      const k = a < 0 || reduced.matches ? 1 : 0.2;
-      a = a < 0 ? g.a : a + (g.a - a) * k;
+      const k = q < 0 || reduced.matches ? 1 : 0.2;
       q = q < 0 ? g.q : q + (g.q - q) * k;
-      if (Math.abs(g.a - a) < 0.0005) a = g.a;
       if (Math.abs(g.q - q) < 0.0005) q = g.q;
-      write("--a", easeOut(a));
-      // The lid lifts once the room is dark; the display wakes with a warm flash.
-      const lid = reduced.matches ? 1 : easeInOut(clamp((a - 0.3) / 0.55));
-      const power = reduced.matches ? 1 : clamp((a - 0.78) / 0.22);
-      write("--lid", lid);
-      write("--power", power);
-      write("--flash", power * (1 - power) * 4);
-      drawDust(a);
+      const now = performance.now();
+      const scene = reduced.matches
+        ? { dim: 1, rise: 1, lid: 1, power: 1, wing: 1 }
+        : introAt((now - startAt) / 1000, mode, easeOut(span((now - wingAt) / 1000, 0, 1.4)));
+      write("--a", scene.dim);
+      write("--rise", scene.rise);
+      write("--lid", scene.lid);
+      write("--power", scene.power);
+      // The display wakes with a warm flash.
+      write("--flash", scene.power * (1 - scene.power) * 4);
+      write("--wing", scene.wing);
+      write("--p", g.p);
+      drawDust(scene.power);
       let best = 0;
       for (let i = 0; i < count; i++) {
         const fadeIn = i === 0 ? 1 : clamp((q - (i - FADE)) / (2 * FADE));
@@ -244,7 +197,11 @@ export function MirrorStage({
       videos.current.forEach((video, i) => {
         if (!video) return;
         const play = visible && i === best && !paused.current && !document.hidden;
-        if (play && video.paused) void video.play().catch(() => setPaused(true));
+        if (play && video.paused)
+          void video.play().catch((e) => {
+            // Only a browser that refuses autoplay should show the play button.
+            if (e?.name === "NotAllowedError") setPaused(true);
+          });
         else if (!play && !video.paused) video.pause();
       });
       // Reflections of a video are redrawn only when its frame changes.
@@ -276,6 +233,8 @@ export function MirrorStage({
     return () => {
       observer.disconnect();
       cancelAnimationFrame(frame);
+      window.removeEventListener("hass:arrive", arrive);
+      window.clearTimeout(late);
       videos.current.forEach((video) => video?.pause());
     };
   }, [count, media]);
@@ -302,7 +261,7 @@ export function MirrorStage({
               ref={(node) => {
                 videos.current[i] = node;
               }}
-              src={src}
+              {...videoProps(src)}
               muted
               loop
               playsInline
@@ -393,9 +352,13 @@ export function MirrorStage({
           </div>
         </div>
         <div className="stage-ui">
-          <span className="stage-caption" aria-live="polite">
-            {t.screen} <b>{pad(active + 1)}</b> / {pad(count)}
-          </span>
+          <div className="stage-title">
+            {eyebrow && <small>{eyebrow}</small>}
+            <strong>{title}</strong>
+            <span className="stage-caption" aria-live="polite">
+              {t.screen} <b>{pad(active + 1)}</b> / {pad(count)}
+            </span>
+          </div>
           {count > 1 && (
             <div className="stage-steps">
               {media.map((_, i) => (
@@ -412,6 +375,7 @@ export function MirrorStage({
               ))}
             </div>
           )}
+          {count < 2 && <span />}
           <div className="stage-actions">
             {hasVideo && (
               <button
@@ -436,6 +400,10 @@ export function MirrorStage({
             )}
           </div>
         </div>
+        <span className="stage-cue" aria-hidden="true">
+          {t.scroll}
+          <i />
+        </span>
       </div>
     </section>
   );

@@ -3,7 +3,6 @@ import Link from "next/link";
 import { useCallback, useEffect, useRef, useState, type CSSProperties } from "react";
 import { Arrow } from "./icon";
 import { Media } from "./media";
-import { Sun } from "./cinema";
 import { createRenderer, type Texture } from "./gl/gl";
 import { copy, pad, type Locale } from "@/lib/content";
 import { clamp, easeInOut, easeOut, useScene } from "@/lib/scene";
@@ -117,6 +116,18 @@ export function ServicesCarousel({ slides, locale }: { slides: ServiceSlide[]; l
     // Media URLs identify the slides; re-create only when they change.
   }, [slides.map((s) => s.media).join("|")]);
 
+  // Where the browser can tie animations to scroll itself, the arrival runs on the compositor
+  // (see .svc in site.css). Moving layers from script lags native scrolling, which shakes on
+  // phones, so without that support only precise pointers get the lift.
+  const lifts = useRef<"css" | "script" | "none">("none");
+  useEffect(() => {
+    lifts.current = CSS.supports("animation-timeline: view()")
+      ? "css"
+      : window.matchMedia("(pointer: fine)").matches
+        ? "script"
+        : "none";
+  }, []);
+
   useScene(root, ({ p: raw, rect, vw, vh, time, reduced }) => {
     const el = root.current;
     if (!el) return;
@@ -131,10 +142,11 @@ export function ServicesCarousel({ slides, locale }: { slides: ServiceSlide[]; l
     // Light breaks through the dark as soon as the section reaches the screen.
     const enter = reduced ? 1 : easeOut(clamp((vh - rect.top) / (vh * 0.72)));
     el.style.setProperty("--enter", enter.toFixed(4));
-    el.style.setProperty(
-      "--lift",
-      (!reduced && rect.top > 0 && rect.top <= vh ? rect.top : 0).toFixed(1) + "px",
-    );
+    if (lifts.current === "script")
+      el.style.setProperty(
+        "--lift",
+        (!reduced && rect.top > 0 && rect.top <= vh ? rect.top : 0).toFixed(1) + "px",
+      );
     el.style.setProperty("--p", p.toFixed(4));
     el.querySelectorAll<HTMLElement>("[data-slide]").forEach((node) => {
       const k = Number(node.dataset.slide);
@@ -232,8 +244,6 @@ export function ServicesCarousel({ slides, locale }: { slides: ServiceSlide[]; l
           <canvas ref={canvas} className="svc-gl" />
           <div className="svc-shade" />
         </div>
-
-        <Sun className="svc-sun" />
 
         <header className="svc-head">
           <span className="eyebrow">{t.services}</span>

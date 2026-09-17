@@ -9,6 +9,12 @@ import {
   slugify,
   workCover,
   workMedia,
+  cloudinaryEager,
+  contactSchema,
+  stillOf,
+  videoPoster,
+  videoSource,
+  whatsappLink,
 } from "./content";
 import { updateSchema, canRetryPending, assertSameOrigin } from "./admin";
 import initial from "./initial-data.json";
@@ -40,6 +46,9 @@ test("reject unsafe external and media URLs", () => {
 });
 test("bilingual settings and concepts validate", () => {
   assert.doesNotThrow(() => settingsSchema.parse(initial.settings));
+  // Settings saved before the contact background existed still load.
+  const { contactImage: _, ...older } = initial.settings;
+  assert.equal(settingsSchema.parse(older).contactImage, "");
   initial.works.forEach((w) => assert.equal(workSchema.parse(w).concept, true));
 });
 test("updates cannot contain invalid progress or private traversal paths", () => {
@@ -125,4 +134,56 @@ test("laptop screens keep order, accept videos and fall back to the cover", () =
   assert.equal(workCover({ ...base, gallery: [clip, shot] }), shot);
   assert.equal(workCover({ ...base, gallery: [clip] }), clip);
   assert.equal(slugify("  Café Olivo — Web 2026! "), "cafe-olivo-web-2026");
+});
+test("cloudinary uploads are accepted, signed and delivered as light renditions", async () => {
+  const { signCloudinary, uploadParams } = await import("./cloudinary");
+  // Reference example from Cloudinary's signature documentation.
+  assert.equal(
+    signCloudinary(
+      { eager: "w_400,h_300,c_pad|w_260,h_200,c_crop", public_id: "sample_image", timestamp: 1315060510 },
+      "abcd",
+    ),
+    "bfd09f95f331f558cbd1320e67aa8d488770583e",
+  );
+  assert.deepEqual(Object.keys(uploadParams("image")).sort(), ["asset_folder", "timestamp"]);
+  assert.equal(uploadParams("video").eager, cloudinaryEager);
+  const video = "https://res.cloudinary.com/demo/video/upload/v17/hass-studio/reel.mov";
+  const image = "https://res.cloudinary.com/demo/image/upload/v17/hass-studio/home.png";
+  assert.equal(mediaUrl.safeParse(video).success, true);
+  assert.equal(mediaUrl.safeParse(image).success, true);
+  for (const bad of [
+    "https://res.cloudinary.com/demo/raw/upload/v1/x.html",
+    "https://res.cloudinary.com.evil.test/demo/image/upload/x.png",
+  ])
+    assert.equal(mediaUrl.safeParse(bad).success, false, bad);
+  assert.equal(isVideo(video), true);
+  assert.equal(isVideo(image), false);
+  assert.equal(
+    videoSource(video),
+    "https://res.cloudinary.com/demo/video/upload/c_limit,q_auto,w_1920/v17/hass-studio/reel.mp4",
+  );
+  assert.equal(
+    videoPoster(video),
+    "https://res.cloudinary.com/demo/video/upload/c_limit,q_auto,so_0,w_1600/v17/hass-studio/reel.jpg",
+  );
+  assert.equal(isVideo(videoPoster(video)), false);
+  assert.equal(stillOf(image), image);
+  assert.equal(videoSource("/images/clip.mp4"), "/images/clip.mp4");
+});
+test("contact messages are validated before anything is sent", () => {
+  const message = {
+    name: "Ana",
+    email: "ana@example.com",
+    phone: "+51 917 785 052",
+    service: "Experiencias web",
+    message: "Quiero una web para mi hotel.",
+    locale: "es",
+    website: "",
+    startedAt: Date.now(),
+  };
+  assert.equal(contactSchema.safeParse(message).success, true);
+  assert.equal(contactSchema.safeParse({ ...message, email: "nope" }).success, false);
+  assert.equal(contactSchema.safeParse({ ...message, message: "hola" }).success, false);
+  assert.equal(contactSchema.safeParse({ ...message, phone: "<script>" }).success, false);
+  assert.equal(whatsappLink("+51 917785052", "Hola"), "https://wa.me/51917785052?text=Hola");
 });

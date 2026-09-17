@@ -1,7 +1,7 @@
 import "server-only";
 import type { Metadata } from "next";
 import { getContent } from "./content";
-import { text, type Locale } from "../content";
+import { stillOf, text, type Locale } from "../content";
 export async function pageMetadata(
   locale: Locale,
   path: string,
@@ -20,7 +20,7 @@ export async function pageMetadata(
       locale: locale === "es" ? "es_PE" : "en_US",
       url: base ? base + "/" + locale + path : undefined,
       title: title || text(settings.seoTitle, locale),
-      images: [settings.heroImage],
+      images: [stillOf(settings.heroImage)].filter(Boolean),
     },
   };
 }

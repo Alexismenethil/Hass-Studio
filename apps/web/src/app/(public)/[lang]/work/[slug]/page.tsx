@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getContent } from "@/lib/server/content";
-import { text, copy, workCover, workMedia, type Locale } from "@/lib/content";
+import { text, copy, stillOf, workCover, workMedia, type Locale } from "@/lib/content";
 import { Arrow } from "@/components/icon";
 import { Media } from "@/components/media";
 import { MirrorStage } from "@/components/mirror-stage";
@@ -21,7 +21,7 @@ export async function generateMetadata({ params }: { params: Params }) {
         },
         title: w.title,
         description: text(w.description, lang),
-        openGraph: { images: [workCover(w)].filter(Boolean) },
+        openGraph: { images: [stillOf(workCover(w))].filter(Boolean) },
       }
     : {};
 }
@@ -42,7 +42,18 @@ export default async function CasePage({ params }: { params: Params }) {
   const scope = w.services.filter(Boolean);
   return (
     <main id="main">
-      <section className="page-hero case-hero" data-header="light">
+      {/* The laptop opens first; the story follows below it. */}
+      {media.length > 0 && (
+        <MirrorStage
+          media={media}
+          title={w.title}
+          eyebrow={[service ? text(service.title, lang) : "", w.year].filter(Boolean).join(" · ")}
+          locale={lang}
+          url={w.url}
+        />
+      )}
+
+      <section className={"page-hero case-hero" + (media.length ? " is-after-stage" : "")} data-header="light">
         <div className="page-hero-top" data-reveal>
           {service ? (
             <Link href={"/" + lang + "/services/" + service.id} className="back-link">
@@ -97,8 +108,6 @@ export default async function CasePage({ params }: { params: Params }) {
           </div>
         </div>
       </section>
-
-      {media.length > 0 && <MirrorStage media={media} title={w.title} locale={lang} url={w.url} />}
 
       {(challenge || approach) && (
         <section className="case-notes" data-header="light">

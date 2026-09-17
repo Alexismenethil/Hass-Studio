@@ -65,11 +65,11 @@ export function HomeEditor({ settings }: { settings: Settings }) {
                 hint="Horizontal, al menos 1920 px de ancho. Un vídeo MP4 corto y sin sonido también funciona."
               />
               <MediaPicker
-                label="Imagen para móviles (opcional)"
+                label="Foto o vídeo para móviles (opcional)"
                 ratio="9 / 13"
                 value={s.heroMobileImage}
                 onChange={(v) => set("heroMobileImage", v)}
-                hint="Vertical. Si la dejas vacía se usa la imagen principal."
+                hint="Vertical. Si lo dejas vacío se usa el fondo principal."
               />
             </div>
           </Card>
@@ -133,7 +133,7 @@ export function HomeEditor({ settings }: { settings: Settings }) {
             />
             <div className="kit-row">
               <MediaPicker
-                label="Foto del arco"
+                label="Foto o vídeo del arco"
                 ratio="3 / 4"
                 value={s.detailImage}
                 onChange={(v) => set("detailImage", v)}
@@ -209,7 +209,7 @@ export function StudioEditor({ settings }: { settings: Settings }) {
             />
             <div className="kit-row">
               <MediaPicker
-                label="Tu fotografía"
+                label="Tu foto o un vídeo corto"
                 ratio="4 / 5"
                 value={s.portrait}
                 onChange={(v) => set("portrait", v)}
@@ -234,6 +234,15 @@ export function StudioEditor({ settings }: { settings: Settings }) {
               value={s.contactText}
               onChange={(v) => set("contactText", v)}
             />
+            <div className="kit-row">
+              <MediaPicker
+                label="Foto o vídeo de fondo de Contacto"
+                value={s.contactImage}
+                onChange={(v) => set("contactImage", v)}
+                hint="Horizontal. Se oscurece un poco para que el formulario se lea bien. Si lo dejas vacío se mantiene la foto del patio que trae la web."
+              />
+              <div />
+            </div>
             <div className="kit-row">
               <Field label="Email público">
                 <input
@@ -340,6 +349,7 @@ export function BrandEditor({ settings }: { settings: Settings }) {
             <div className="kit-row">
               <MediaPicker
                 label="Logo (opcional)"
+                kind="image"
                 ratio="5 / 2"
                 value={s.logo}
                 onChange={(v) => set("logo", v)}

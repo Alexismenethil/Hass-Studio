@@ -1,11 +1,11 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getContent } from "@/lib/server/content";
-import { copy, pad, text, workCover, type Locale } from "@/lib/content";
+import { copy, pad, text, workCover, workMedia, type Locale } from "@/lib/content";
 import { Arrow } from "@/components/icon";
 import { Media } from "@/components/media";
 import { Chars } from "@/components/text";
-import { WorkCards } from "@/components/work-cards";
+import { WorkShowcase } from "@/components/work-showcase";
 
 type Params = Promise<{ lang: Locale; id: string }>;
 
@@ -83,7 +83,21 @@ export default async function ServicePage({ params }: { params: Params }) {
           <span className="works-count">{pad(own.length)}</span>
         </header>
         {own.length ? (
-          <WorkCards works={own} locale={lang} />
+          <WorkShowcase
+            locale={lang}
+            works={own.map((w) => ({
+              id: w.id,
+              slug: w.slug,
+              title: w.title,
+              description: text(w.description, lang),
+              year: w.year,
+              scope: w.services.filter(Boolean).slice(0, 3),
+              concept: w.concept,
+              url: w.url,
+              cover: workCover(w),
+              media: workMedia(w),
+            }))}
+          />
         ) : (
           <p className="empty-state">{t.empty}</p>
         )}

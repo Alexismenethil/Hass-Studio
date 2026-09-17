@@ -7,7 +7,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { isVideo, pad, type Bilingual, type Locale } from "@/lib/content";
+import { cloudinaryUrl, isVideo, pad, type Bilingual, type Locale } from "@/lib/content";
 import { accept, uploadFile, type UploadKind } from "../upload";
 
 export type Admin = {
@@ -266,8 +266,8 @@ export function Thumb({ src, className = "" }: { src: string; className?: string
   return isVideo(src) ? (
     <video className={"thumb " + className} src={src} muted playsInline loop autoPlay preload="metadata" />
   ) : (
-    // Admin previews show the uploaded file as-is.
-    <img className={"thumb " + className} src={src} alt="" loading="lazy" />
+    // Admin previews show the uploaded file, lightly resized when Cloudinary can do it.
+    <img className={"thumb " + className} src={cloudinaryUrl(src, "c_limit,f_auto,q_auto,w_640")} alt="" loading="lazy" />
   );
 }
 
@@ -276,7 +276,7 @@ export function MediaPicker({
   hint,
   value,
   onChange,
-  kind = "image",
+  kind = "media",
   ratio = "16 / 10",
 }: {
   label: string;
@@ -324,7 +324,7 @@ export function MediaPicker({
         ) : (
           <span className="picker-empty">
             <b>↑</b>
-            Arrastra un archivo aquí
+            {kind === "image" ? "Arrastra una imagen aquí" : "Arrastra una foto o un vídeo aquí"}
           </span>
         )}
         {progress !== null && (
