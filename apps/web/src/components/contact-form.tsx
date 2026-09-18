@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { Arrow } from "./icon";
 import { Sun } from "./cinema";
 import { contactSchema, copy, whatsappLink, type Locale } from "@/lib/content";
@@ -61,11 +61,7 @@ export function ContactForm({
   if (state === "sent")
     return (
       <div className="contact-card contact-sent" role="status">
-        <div className="contact-sent-sky" aria-hidden="true">
-          <span className="contact-sent-glow" />
-          <span className="contact-sent-disc" />
-          <Sun className="contact-sent-sun" />
-        </div>
+        <Sun className="contact-sent-sun" />
         <span className="eyebrow">{t.sentTitle}</span>
         <h2>
           {t.sentThanks}, <em>{values.name.split(" ")[0]}.</em>
@@ -100,9 +96,7 @@ export function ContactForm({
     >
       <header className="contact-card-head">
         <h2>{t.formTitle}</h2>
-        <span>
-          <i /> {t.replyTime}
-        </span>
+        <span>{t.replyTime}</span>
       </header>
 
       <label className={"contact-field" + invalid("name")}>
@@ -199,23 +193,3 @@ export function ContactForm({
   );
 }
 
-/** The studio's time in Peru, shown once the page is in the browser. */
-export function LocalTime({ locale, label }: { locale: Locale; label: string }) {
-  const [now, setNow] = useState("");
-  useEffect(() => {
-    const format = new Intl.DateTimeFormat(locale === "es" ? "es-PE" : "en-US", {
-      hour: "2-digit",
-      minute: "2-digit",
-      timeZone: "America/Lima",
-    });
-    const tick = () => setNow(format.format(new Date()));
-    tick();
-    const timer = window.setInterval(tick, 20000);
-    return () => window.clearInterval(timer);
-  }, [locale]);
-  return (
-    <span className="contact-time">
-      {label} · Perú <b>{now || "—"}</b>
-    </span>
-  );
-}

@@ -76,7 +76,7 @@ export function Opening({ image, mobileImage, title, sub, eyebrow, statement, al
   const canvas = useRef<HTMLCanvasElement>(null);
   const renderer = useRef<ReturnType<typeof createRenderer>>(null);
   const texture = useRef<Texture | null>(null);
-  const live = useRef({ mouse: [0.5, 0.45], target: [0.5, 0.45], readyAt: 0, revealAt: 0 });
+  const live = useRef({ mouse: [0.5, 0.45], target: [0.5, 0.45], readyAt: 0, revealAt: 0, a: -1, b: -1 });
   const [left, right] = halves(statement);
 
   const still = !isVideo(image) && image;
@@ -102,12 +102,17 @@ export function Opening({ image, mobileImage, title, sub, eyebrow, statement, al
     const delay = firstVisit ? Math.max(0, 1350 - performance.now()) : 0;
     live.current.revealAt = performance.now() + delay;
     const reveal = window.setTimeout(() => el.classList.add("is-in"), delay + 60);
-    if (reduced) return () => window.clearTimeout(reveal);
+    // The shader is a luxury. On phones the photograph and the CSS light carry the
+    // scene instead: one fewer full-screen layer to paint on every frame.
+    const rich =
+      window.matchMedia("(min-width: 768px) and (pointer: fine)").matches &&
+      (navigator.hardwareConcurrency || 8) >= 4 &&
+      !(navigator as Navigator & { connection?: { saveData?: boolean } }).connection?.saveData;
+    if (reduced || !rich) return () => window.clearTimeout(reveal);
     const r = createRenderer(surface, LIGHT);
     renderer.current = r;
     if (r) {
-      const narrow = window.innerWidth < 768 && !!mobileImage;
-      texture.current = r.texture(narrow ? mobileImage : image, () => {
+      texture.current = r.texture(image, () => {
         live.current.readyAt = performance.now();
         surface.classList.add("is-ready");
         texture.current?.video?.play().catch(() => {});
@@ -130,8 +135,12 @@ export function Opening({ image, mobileImage, title, sub, eyebrow, statement, al
     const win = frame.current;
     if (!el || !win) return;
     const s = live.current;
-    const a = reduced ? 0 : easeInOut(span(p, 0, 0.42));
-    const b = reduced ? 0 : easeInOut(span(p, 0.56, 0.92));
+    const a = reduced ? 0 : easeInOut(span(p, 0, 0.38));
+    const b = reduced ? 0 : easeInOut(span(p, 0.42, 0.68));
+    // Nothing has moved and there is no shader to advance: leave the frame alone.
+    if (!renderer.current && Math.abs(a - s.a) < 0.0004 && Math.abs(b - s.b) < 0.0004) return;
+    s.a = a;
+    s.b = b;
     const shape = a;
     const narrow = vw < 768;
     const W = narrow ? vw * 0.62 : Math.min(vw * 0.28, vh * 0.44);
@@ -151,12 +160,12 @@ export function Opening({ image, mobileImage, title, sub, eyebrow, statement, al
     el.style.setProperty("--shape", (shape * (1 - b)).toFixed(4));
     el.dataset.header = shape > 0.3 && b < 0.5 ? "light" : "dark";
 
-    const k = 1 - Math.exp(-dt * 2.5);
-    s.mouse[0] += (s.target[0] - s.mouse[0]) * k;
-    s.mouse[1] += (s.target[1] - s.mouse[1]) * k;
     const r = renderer.current;
     const tex = texture.current;
     if (!r || !tex?.ready || reduced) return;
+    const k = 1 - Math.exp(-dt * 2.5);
+    s.mouse[0] += (s.target[0] - s.mouse[0]) * k;
+    s.mouse[1] += (s.target[1] - s.mouse[1]) * k;
     const since = (performance.now() - Math.max(s.readyAt, s.revealAt)) / 1000;
     const revealed = easeOut(clamp(since / 2.6));
     r.refresh(tex);
@@ -203,6 +212,8 @@ export function Opening({ image, mobileImage, title, sub, eyebrow, statement, al
               image && <video {...videoProps(image)} muted loop playsInline autoPlay aria-label={alt} />
             )}
             <canvas ref={canvas} className="opening-gl" aria-hidden="true" />
+            <div className="opening-haze" aria-hidden="true" />
+            <div className="opening-night" aria-hidden="true" />
           </div>
           <div className="opening-shade" />
           <div className="opening-copy">
@@ -217,7 +228,7 @@ export function Opening({ image, mobileImage, title, sub, eyebrow, statement, al
             {eyebrow}
           </p>
         )}
-        <a className="opening-cue" href="#services">
+        <a className="opening-cue" href="#work">
           <span>{t.scroll}</span>
           <i />
         </a>

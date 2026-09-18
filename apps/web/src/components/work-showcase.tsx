@@ -3,7 +3,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Arrow } from "./icon";
 import { Chars } from "./text";
-import { Laptop, OpeningLaptop, screenSource, useFits } from "./laptop";
+import { OpeningLaptop, screenSource, useFits } from "./laptop";
 import { copy, isVideo, pad, stillOf, type Locale } from "@/lib/content";
 import { videoProps } from "@/lib/media";
 import { clamp, easeInOut, easeOut, span, useScene } from "@/lib/scene";
@@ -138,24 +138,6 @@ function ShowcaseItem({
         )}
         <div className="showcase-beam" aria-hidden="true" />
         <div className="showcase-glow" aria-hidden="true" />
-        {(["is-left", "is-right"] as const).map((side) => (
-          <div key={side} className={"showcase-mirror " + side} aria-hidden="true">
-            <Laptop className="showcase-reflection">
-              {screens.map((src, i) =>
-                isVideo(src) ? null : (
-                  <div
-                    key={src + i}
-                    className={"shot" + (i === active ? " is-active" : "")}
-                    data-fit={fits[i]}
-                  >
-                    <img src={sources[i]} alt="" loading="lazy" decoding="async" draggable={false} />
-                  </div>
-                ),
-              )}
-            </Laptop>
-            <span className="showcase-mirror-sheen" />
-          </div>
-        ))}
         <div className="showcase-device" data-dive-device>
           <div className="showcase-tilt">
             <OpeningLaptop>

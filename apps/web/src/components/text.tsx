@@ -1,35 +1,26 @@
 import { Fragment, type CSSProperties } from "react";
 import { lines } from "@/lib/content";
 
-/** Each line is masked so it can rise into view. */
-export function Lines({ text, italicLast = false }: { text: string; italicLast?: boolean }) {
-  const list = lines(text);
-  return (
-    <>
-      {list.map((line, i) => (
-        <span
-          key={i}
-          className={
-            "line" + (italicLast && list.length > 1 && i === list.length - 1 ? " italic" : "")
-          }
-        >
-          <span className="line-inner">{line}</span>
-        </span>
-      ))}
-    </>
-  );
-}
-
-/** Words brighten one after another as the reader scrolls. */
+/**
+ * Words come into focus one after another as the reader scrolls: each one knows
+ * its turn (--wi) and how many there are (--wc), which is all the CSS needs to
+ * give it its own slice of the scroll.
+ */
 export function Words({ text }: { text: string }) {
+  const rows = lines(text);
+  const count = rows.join(" ").split(" ").filter(Boolean).length || 1;
+  let index = 0;
   return (
     <>
-      {lines(text).map((line, i) => (
+      {rows.map((line, i) => (
         <span key={i} className="line">
           {line.split(" ").map((word, n) => (
-            <span key={n} className="w">
-              {word}{" "}
-            </span>
+            <Fragment key={n}>
+              {/* The space stays outside: an inline-block would swallow it. */}
+              <span className="w" style={{ "--wi": index++, "--wc": count } as CSSProperties}>
+                {word}
+              </span>{" "}
+            </Fragment>
           ))}
         </span>
       ))}

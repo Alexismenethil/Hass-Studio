@@ -42,7 +42,7 @@ export default async function ServicePage({ params }: { params: Params }) {
     <main id="main">
       <section className="page-hero" data-header="light">
         <div className="page-hero-top" data-reveal>
-          <Link href={"/" + lang + "#services"} className="back-link">
+          <Link href={"/" + lang + "/services"} className="back-link">
             <Arrow className="arrow-left" /> {t.allServices}
           </Link>
           <span className="eyebrow">
@@ -72,7 +72,7 @@ export default async function ServicePage({ params }: { params: Params }) {
       </section>
 
       <div className="wide-media" data-arch>
-        <div className="wide-media-drift" data-parallax="8">
+        <div className="wide-media-drift" data-parallax>
           <Media src={cover} sizes="100vw" alt="" priority />
         </div>
       </div>

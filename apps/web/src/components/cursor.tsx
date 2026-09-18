@@ -26,7 +26,7 @@ export function Cursor() {
           ? requestAnimationFrame(loop)
           : 0;
     };
-    let pending = 0;
+    let idle = 0;
     const sync = (target: Element | null) => {
       const text = target?.closest?.("[data-cursor]")?.getAttribute("data-cursor") || "";
       if (text) label.textContent = text;
@@ -39,13 +39,13 @@ export function Cursor() {
       sync(e.target as Element | null);
       if (!frame) frame = requestAnimationFrame(loop);
     };
-    // Content moves under a still pointer while scrolling.
+    // Content moves under a still pointer while scrolling, so the label is read
+    // again once the scrolling stops — never per frame: a hit test on every
+    // frame of every scroll is what made a long page feel heavy on a desktop.
     const scroll = () => {
-      if (pending || x < 0) return;
-      pending = requestAnimationFrame(() => {
-        pending = 0;
-        sync(document.elementFromPoint(x, y));
-      });
+      if (x < 0) return;
+      window.clearTimeout(idle);
+      idle = window.setTimeout(() => sync(document.elementFromPoint(x, y)), 140);
     };
     const leave = () => el.classList.remove("is-on");
     window.addEventListener("pointermove", move, { passive: true });
@@ -53,7 +53,7 @@ export function Cursor() {
     document.documentElement.addEventListener("pointerleave", leave);
     return () => {
       cancelAnimationFrame(frame);
-      cancelAnimationFrame(pending);
+      window.clearTimeout(idle);
       window.removeEventListener("pointermove", move);
       window.removeEventListener("scroll", scroll);
       document.documentElement.removeEventListener("pointerleave", leave);

@@ -13,9 +13,6 @@
   padding-bottom: 0.1em;
   margin-bottom: -0.1em;
 }
-.line-inner {
-  display: inline-block;
-}
 .lead {
   font-size: clamp(17px, 1.4vw, 21px);
   line-height: 1.55;
@@ -269,7 +266,7 @@
   display: none;
 }
 
-/* ————— Cinema: letters, grain, curtain, cursor ————— */
+/* ————— Cinema: letters, grain, the veil, cursor ————— */
 .cline {
   display: block;
 }
@@ -298,24 +295,103 @@
   filter: blur(0);
   transform: none;
 }
-.grain {
-  position: fixed;
-  inset: -100%;
-  z-index: 95;
-  pointer-events: none;
-  opacity: 0.55;
-  animation: grain 1.1s steps(7) infinite;
-  will-change: transform;
+/* Entrances: a class arrives, the browser eases the rest (see components/motion.tsx). */
+.js [data-reveal] {
+  opacity: 0;
+  transform: translate3d(0, 46px, 0);
+  transition:
+    opacity 0.9s var(--ease) var(--delay, 0s),
+    transform 1.15s var(--ease) var(--delay, 0s);
 }
-@keyframes grain {
-  0% { transform: translate(0, 0); }
-  15% { transform: translate(-3%, 2%); }
-  30% { transform: translate(2%, -4%); }
-  45% { transform: translate(-4%, -2%); }
-  60% { transform: translate(3%, 3%); }
-  75% { transform: translate(-1%, 4%); }
-  90% { transform: translate(4%, -1%); }
-  100% { transform: translate(0, 0); }
+.js [data-reveal].is-in {
+  opacity: 1;
+  transform: none;
+}
+.js [data-words] .w {
+  display: inline-block;
+  opacity: 0.08;
+  filter: blur(11px);
+  transform: translate3d(0, 0.18em, 0);
+  transition:
+    opacity 0.8s var(--ease) calc(var(--wi, 0) * 55ms),
+    filter 1s var(--ease) calc(var(--wi, 0) * 55ms),
+    transform 1.1s var(--ease) calc(var(--wi, 0) * 55ms);
+}
+.js [data-words].is-in .w {
+  opacity: 1;
+  filter: blur(0);
+  transform: none;
+}
+/* Where the browser can, every word carries its own view timeline: it comes into
+   focus as it rises through the middle of the screen, so the paragraph always
+   reads sharp at the top and still veiled below — and each word a breath later
+   than the one before it, in reading order. Pure scroll: no script, no
+   listeners, and the browser runs it off the main thread. */
+@supports (animation-timeline: view()) {
+  .js [data-words] .w {
+    animation: word-focus linear both;
+    animation-timeline: view();
+    animation-range: contain calc(26% + var(--wi, 0) * (6% / var(--wc, 24)))
+      contain calc(38% + var(--wi, 0) * (6% / var(--wc, 24)));
+    transform: none;
+    transition: none;
+  }
+  @keyframes word-focus {
+    from {
+      opacity: 0.1;
+      filter: blur(8px);
+    }
+    to {
+      opacity: 1;
+      filter: blur(0);
+    }
+  }
+}
+.is-magnetic {
+  transition: translate 0.6s var(--ease);
+}
+/* Scroll-linked motion: the browser drives it from the scroll position itself.
+   Without support, every one of these rests in its finished state. */
+@supports (animation-timeline: view()) {
+  [data-parallax] {
+    animation: drift linear both;
+    animation-timeline: view();
+    animation-range: cover;
+  }
+  @keyframes drift {
+    from {
+      transform: translate3d(0, -7%, 0);
+    }
+    to {
+      transform: translate3d(0, 7%, 0);
+    }
+  }
+  [data-arch] {
+    animation: arch-open linear both;
+    animation-timeline: view();
+    animation-range: entry 6% cover 52%;
+  }
+  [data-arch] .media {
+    animation: media-close linear both;
+    animation-timeline: view();
+    animation-range: entry 6% cover 52%;
+  }
+  @keyframes arch-open {
+    from {
+      clip-path: inset(0% 30% 0% 30% round 600px 600px 0px 0px);
+    }
+    to {
+      clip-path: inset(0% 0% 0% 0% round 0px 0px 0px 0px);
+    }
+  }
+  @keyframes media-close {
+    from {
+      scale: 1.35;
+    }
+    to {
+      scale: 1;
+    }
+  }
 }
 .sun line {
   vector-effect: non-scaling-stroke;
@@ -325,75 +401,109 @@
     rotate: 360deg;
   }
 }
-.curtain {
+/* The veil: a band of warm light sweeps the page away, the night follows it,
+   and the destination is named on a title card. Two layers, one transform each. */
+.veil {
   position: fixed;
   inset: 0;
   z-index: 120;
   pointer-events: none;
   overflow: hidden;
 }
-.curtain-panel {
-  position: absolute;
-  left: -15%;
-  right: -15%;
-  top: 0;
-  height: 130%;
-  display: grid;
-  place-items: center;
-  background: var(--night);
-  color: var(--paper);
-  border-radius: 50% 50% 0 0 / 26% 26% 0 0;
-  transform: translate3d(0, 102%, 0);
-}
-.curtain.is-cover {
+.veil.is-cover {
   pointer-events: auto;
 }
-.curtain.is-cover .curtain-panel {
-  transform: translate3d(0, -12%, 0);
+.veil-warm,
+.veil-sheet {
+  position: absolute;
+  left: -12%;
+  right: -12%;
+  top: 0;
+  height: 134%;
+  border-radius: 50% 50% 0 0 / 22% 22% 0 0;
+  transform: translate3d(0, 104%, 0);
+  will-change: transform;
+}
+.veil-warm {
+  background: linear-gradient(180deg, #fbf3e2, #edd9b4 38%, #b08f5f);
+}
+.veil-sheet {
+  background:
+    radial-gradient(ellipse 60% 42% at 50% 34%, rgba(98, 105, 80, 0.35), transparent 70%),
+    var(--night);
+}
+/* Covering: the light leads, the night comes a breath later. */
+.veil.is-cover .veil-warm,
+.veil.is-cover .veil-sheet {
+  transform: translate3d(0, -16%, 0);
   border-radius: 0 0 0 0 / 0 0 0 0;
   transition:
-    transform 0.8s var(--ease-io),
-    border-radius 0.8s var(--ease-io);
+    transform 0.74s var(--ease-io),
+    border-radius 0.74s var(--ease-io);
 }
-.curtain.is-reveal .curtain-panel {
-  transform: translate3d(0, -112%, 0);
-  border-radius: 0 0 50% 50% / 0 0 26% 26%;
+.veil.is-cover .veil-sheet {
+  transition-delay: 0.1s;
+}
+/* Revealing: the night lifts first and the warm band trails off the top. */
+.veil.is-reveal .veil-warm,
+.veil.is-reveal .veil-sheet {
+  transform: translate3d(0, -136%, 0);
+  border-radius: 0 0 50% 50% / 0 0 24% 24%;
   transition:
-    transform 1.05s var(--ease-io) 0.1s,
-    border-radius 1.05s var(--ease-io) 0.1s;
+    transform 1s var(--ease-io),
+    border-radius 1s var(--ease-io);
 }
-.curtain-sun {
+.veil.is-reveal .veil-warm {
+  transition-delay: 0.12s;
+}
+.veil-card {
   position: absolute;
-  top: 46%;
   left: 50%;
-  width: min(70vh, 70vw);
+  top: 50%;
   translate: -50% -50%;
-  color: rgba(243, 240, 232, 0.08);
-  animation: spin 40s linear infinite;
+  display: grid;
+  justify-items: center;
+  gap: clamp(22px, 4vh, 40px);
+  color: var(--paper);
+  opacity: 0;
 }
-.curtain-label {
-  position: relative;
+.veil.is-cover .veil-card {
+  opacity: 1;
+  transition: opacity 0.5s var(--ease) 0.3s;
+}
+.veil.is-reveal .veil-card {
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+.veil-sun {
+  width: clamp(64px, 9vh, 96px);
+  color: rgba(243, 240, 232, 0.55);
+}
+.veil.is-cover .veil-sun line {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: intro-ray 0.8s var(--ease) forwards;
+  animation-delay: calc(0.3s + var(--ri) * 28ms);
+}
+.veil-name {
   display: flex;
   overflow: hidden;
-  padding: 0.08em 0.1em 0.16em;
-  margin-top: -16vh;
-  font-family: var(--font-serif), Georgia, serif;
-  font-style: italic;
-  font-size: clamp(42px, 7vw, 124px);
-  letter-spacing: -0.04em;
-  white-space: nowrap;
+  padding-bottom: 0.2em;
+  font-size: clamp(11px, 1.1vw, 13px);
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
 }
-.curtain-label span {
+.veil-name span {
   display: inline-block;
-  transform: translate3d(0, 115%, 0);
+  transform: translate3d(0, 120%, 0);
 }
-.is-cover .curtain-label span {
+.is-cover .veil-name span {
   transform: none;
-  transition: transform 0.9s var(--ease) calc(0.28s + var(--ci) * 16ms);
+  transition: transform 0.85s var(--ease) calc(0.34s + var(--ci) * 18ms);
 }
-.is-reveal .curtain-label span {
-  transform: translate3d(0, -115%, 0);
-  transition: transform 0.6s var(--ease-io) calc(var(--ci) * 8ms);
+.is-reveal .veil-name span {
+  transform: translate3d(0, -120%, 0);
+  transition: transform 0.5s var(--ease-io) calc(var(--ci) * 8ms);
 }
 .cursor {
   position: fixed;
@@ -543,7 +653,7 @@ html[data-intro="seen"] .intro {
 .opening {
   --arch-w: min(28vw, 44vh);
   position: relative;
-  height: calc(100svh + 140svh);
+  height: calc(100svh + 130svh);
   background: var(--night);
 }
 .opening-sticky {
@@ -596,6 +706,32 @@ html[data-intro="seen"] .intro {
 }
 .opening-gl.is-ready {
   opacity: 1;
+}
+/* Warm light drifting over the photograph — what the shader does, for phones. */
+.opening-haze {
+  position: absolute;
+  inset: -12%;
+  opacity: 0.75;
+  background:
+    radial-gradient(ellipse 38% 32% at 30% 24%, rgba(255, 236, 200, 0.3), transparent 70%),
+    radial-gradient(ellipse 54% 42% at 76% 70%, rgba(72, 68, 48, 0.36), transparent 72%);
+  animation: haze 26s var(--ease-io) infinite alternate;
+  transition: opacity 0.6s;
+}
+@keyframes haze {
+  to {
+    transform: translate3d(3%, -2.5%, 0) scale(1.07);
+  }
+}
+.opening-gl.is-ready ~ .opening-haze {
+  opacity: 0;
+}
+/* The scene goes to night as the arch passes through, so the work arrives out of the dark. */
+.opening-night {
+  position: absolute;
+  inset: 0;
+  background: var(--night);
+  opacity: calc(var(--b, 0) * var(--b, 0));
 }
 .opening-shade {
   position: absolute;
@@ -1138,174 +1274,561 @@ html[data-intro="seen"] .intro {
   transform: none;
 }
 
-/* ————— Home · reel ————— */
-.reel {
+/* ————— Home · the screening room ————— */
+/*
+ * One laptop, its light, its name. The hall rides up out of the hero's night
+ * faster than the page scrolls, an arch of the project's own light opens on it
+ * and the laptop stands up inside — all of it CSS the browser ties to scroll
+ * itself, so nothing here asks script for a frame. The work travels sideways on
+ * one rail of native scroll.
+ */
+.gal {
+  --room-h: min(78svh, 54vw);
+  --room-w: min(96vw, calc(var(--room-h) * 1.5));
+  /* How far the project's light reaches before it is nothing. It has to end
+     inside the screen, because the section clips sideways. */
+  --pool-x: 42%;
+  --pool-y: 52%;
   position: relative;
-  height: calc(100svh + 160vw);
-  background: var(--paper);
+  z-index: 1;
+  /* The hero's last screen is already night: the hall rises out of it. */
+  margin-top: -34svh;
+  display: grid;
+  /* The rail is wider than the screen on purpose: the column must not follow it. */
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr);
+  min-height: 100svh;
+  padding: clamp(40px, 7svh, 90px) 0 clamp(40px, 8svh, 100px);
+  background: var(--night);
+  color: var(--paper);
+  /* Sideways only: the hall is allowed to rise out of its own box. */
+  overflow-x: clip;
+  overflow-y: visible;
 }
-.reel-sticky {
-  position: sticky;
-  top: 0;
-  height: 100svh;
-  min-height: 560px;
-  overflow: hidden;
-}
-.reel-track {
-  position: absolute;
-  left: 0;
-  top: 0;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  gap: clamp(32px, 4.5vw, 84px);
-  padding: 0 var(--gutter);
-  will-change: transform;
-}
-.reel-intro {
-  flex: none;
-  width: clamp(290px, 36vw, 600px);
-}
-.reel-intro h2 {
-  margin-top: 26px;
-  font-size: clamp(48px, 6vw, 108px);
-  line-height: 0.95;
-  letter-spacing: -0.045em;
-}
-.reel-intro sup {
-  margin-left: 4px;
-  font-size: 8px;
-}
-.reel-card {
-  position: relative;
-  flex: none;
-  display: block;
-  transform: skewX(var(--skew, 0deg));
-}
-.reel-frame {
-  position: relative;
-  display: block;
-  overflow: hidden;
-  background: var(--paper-dark);
-}
-.reel-card.is-arch .reel-frame {
-  width: clamp(240px, 23vw, 420px);
-  aspect-ratio: 3 / 4;
-  border-radius: 9999px 9999px 0 0;
-}
-.reel-card.is-tall .reel-frame {
-  width: clamp(220px, 20vw, 360px);
-  aspect-ratio: 3 / 4.4;
-}
-.reel-card.is-tall {
-  margin-top: 16vh;
-}
-.reel-card.is-wide .reel-frame {
-  width: clamp(320px, 36vw, 660px);
-  aspect-ratio: 16 / 10;
-}
-.reel-card.is-wide {
-  margin-bottom: 18vh;
-}
-.reel-drift {
-  position: absolute;
-  inset: 0 -14%;
-  transform: translate3d(calc(var(--o, 0) * -12%), 0, 0);
-}
-.reel-drift .media {
+/* The air of the hall: one wash of warm light with no edge of its own — every
+   stop fades to nothing inside the box, so nothing can ever cut it into a line. */
+.gal-light {
   position: absolute;
   inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: scale 1.2s var(--ease);
+  opacity: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 64% 46% at 50% 38%, rgba(255, 232, 196, 0.13), transparent 72%),
+    radial-gradient(ellipse 46% 30% at 50% 62%, rgba(98, 105, 80, 0.22), transparent 74%);
 }
-.reel-card:hover .media {
-  scale: 1.06;
-}
-.reel-meta {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 2px 14px;
-  margin-top: 18px;
-}
-.reel-meta b {
-  grid-row: span 2;
-  padding-top: 6px;
-  font-size: 10.5px;
-  font-weight: 400;
-  color: var(--muted);
-}
-.reel-meta strong {
-  font-family: var(--font-serif), Georgia, serif;
-  font-size: clamp(26px, 2.4vw, 42px);
-  font-weight: 400;
-  line-height: 1;
-  letter-spacing: -0.03em;
-}
-.reel-meta small {
-  font-size: 12px;
-  color: var(--muted);
-}
-.reel-end {
+.gal-band {
   position: relative;
-  flex: none;
-  display: grid;
-  place-items: center;
-  width: clamp(150px, 13vw, 210px);
-  aspect-ratio: 1;
-  margin: 0 5vw 0 2vw;
-  border-radius: 50%;
-  overflow: hidden;
-  isolation: isolate;
-  background: var(--ink);
-  color: var(--paper);
-  font-size: 14px;
+  align-self: center;
+  width: 100%;
 }
-.reel-end span {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-.reel-end svg {
-  width: 15px;
-}
-.reel-end::before {
+/* Rooms dissolve into the dark as they leave the light. */
+.gal-band::before,
+.gal-band::after {
   content: "";
   position: absolute;
-  inset: -12%;
-  z-index: -1;
-  border-radius: 50%;
-  background: var(--olive);
-  transform: translateY(102%);
-  transition: transform 0.75s var(--ease);
+  top: -4vh;
+  bottom: -4vh;
+  z-index: 3;
+  width: clamp(30px, 13vw, 260px);
+  pointer-events: none;
 }
-.reel-end:hover::before {
+.gal-band::before {
+  left: 0;
+  background: linear-gradient(90deg, var(--night) 22%, transparent);
+}
+.gal-band::after {
+  right: 0;
+  background: linear-gradient(270deg, var(--night) 22%, transparent);
+}
+.gal-floor {
+  position: absolute;
+  left: -20vw;
+  right: -20vw;
+  top: var(--room-h);
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 226, 180, 0.22) 26%,
+    rgba(255, 226, 180, 0.36) 50%,
+    rgba(255, 226, 180, 0.22) 74%,
+    transparent
+  );
+  pointer-events: none;
+}
+.gal-floor::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: clamp(54px, 11vh, 120px);
+  background: linear-gradient(0deg, rgba(255, 226, 180, 0.07), transparent);
+}
+.gal-floor::after {
+  content: "";
+  position: absolute;
+  left: 20vw;
+  right: 20vw;
+  bottom: 0;
+  height: calc(var(--room-h) * 1.5);
+  background: radial-gradient(ellipse 44% 48% at 50% 62%, rgba(255, 226, 184, 0.17), transparent 72%);
+  pointer-events: none;
+}
+.gal-rail {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: start;
+  gap: clamp(22px, 4vw, 70px);
+  padding: 0 calc(50% - var(--room-w) / 2);
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+.gal-rail::-webkit-scrollbar {
+  display: none;
+}
+.gal-slide {
+  position: relative;
+  flex: none;
+  width: var(--room-w);
+  scroll-snap-align: center;
+  scroll-snap-stop: always;
+}
+/* The light the screen spills into the hall around the room. */
+.gal-slide::before {
+  content: "";
+  position: absolute;
+  left: -30%;
+  right: -30%;
+  top: 0;
+  height: var(--room-h);
+  background: radial-gradient(ellipse 54% 46% at 50% 48%, rgba(255, 224, 176, 0.2), transparent 74%);
+  pointer-events: none;
+}
+/* The light the room stands in, on the floor. */
+.gal-slide::after {
+  content: "";
+  position: absolute;
+  left: 2%;
+  right: 2%;
+  top: calc(var(--room-h) - 10px);
+  height: clamp(16px, 3vh, 30px);
+  background: radial-gradient(ellipse at 50% 0%, rgba(255, 226, 180, 0.26), transparent 72%);
+  pointer-events: none;
+}
+/* No card: the room is a pool of light whose edges dissolve into the hall.
+   Written through .gal-slide so it outweighs the service page's own rooms. */
+.gal-slide .gal-room {
+  width: 100%;
+  height: var(--room-h);
+  aspect-ratio: auto;
+  background: transparent;
+  border-radius: 0;
+  overflow: visible;
+  clip-path: none;
+}
+.gal-slide .gal-room::after {
+  background: none;
+}
+/* Only the base catches the floor, and only just. Chrome silently drops
+   `-webkit-box-reflect: none`, so `unset` is the way to remove one entirely. */
+.gal-room .laptop-main {
+  -webkit-box-reflect: below 0px linear-gradient(transparent 80%, rgba(255, 255, 255, 0.09));
+}
+.gal-slide:not(.is-on) .laptop-main {
+  -webkit-box-reflect: unset;
+}
+/* A pool of the project's own light, wider than the laptop and gone to nothing
+   before it could ever show an edge: the laptop stands in it, not on top of it.
+   It must not reach over the top of the room — the rail is a scroll container and
+   clips there, which is what drew a straight line above the laptop. The envelope
+   above and below is the slide's own halo, which nothing clips. */
+.gal-room .showcase-backdrop {
+  inset: 0 -15%;
+  -webkit-mask-image: radial-gradient(
+    ellipse var(--pool-x) var(--pool-y) at 50% 46%,
+    #000 12%,
+    transparent 80%
+  );
+  mask-image: radial-gradient(
+    ellipse var(--pool-x) var(--pool-y) at 50% 46%,
+    #000 12%,
+    transparent 80%
+  );
+}
+.gal-room .showcase-backdrop img {
+  filter: blur(58px) saturate(1.55) brightness(0.78);
+}
+/* Out-of-focus light, never quite still — only in the room on show, so a wide
+   screen is not painting fifteen blurred halls at once. */
+.gal-slide.is-on .gal-room .showcase-backdrop {
+  animation: room-drift 28s var(--ease-io) infinite alternate;
+}
+@keyframes room-drift {
+  from {
+    transform: scale(1.06) translate3d(-1.5%, 0.5%, 0);
+  }
+  to {
+    transform: scale(1.16) translate3d(2%, -1.5%, 0);
+  }
+}
+/* The light from above. Its centre sits well inside the box and every stop
+   reaches nothing before the edges, so the beam has no line where it begins —
+   a gradient anchored at `50% 0%` starts at its brightest and cuts straight
+   across the top of the room, which is exactly what broke the immersion. */
+.gal-room .showcase-beam {
+  background: radial-gradient(ellipse 38% 42% at 50% 32%, rgba(255, 232, 196, 0.3), transparent 74%);
+}
+/* The laptop takes the room, with air over the lid so nothing clips it — not
+   even the lean it takes towards the pointer. */
+.gal-room .showcase-device {
+  width: 90%;
+  top: 48%;
+}
+.gal-room:hover .showcase-tilt {
+  transform: rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) scale(1.03);
+}
+/* Two very quiet arrows under the floor line, for anyone who would rather steer. */
+.gal-nav {
+  position: absolute;
+  left: 50%;
+  top: calc(var(--room-h) + clamp(16px, 3vh, 38px));
+  z-index: 4;
+  display: flex;
+  gap: clamp(14px, 2vw, 26px);
+  translate: -50% 0;
+}
+.gal-nav button {
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  border: 1px solid rgba(243, 240, 232, 0.16);
+  color: rgba(243, 240, 232, 0.5);
+  opacity: 0.7;
+  transition:
+    opacity 0.5s,
+    border-color 0.5s,
+    color 0.5s;
+}
+.gal-nav button:hover {
+  opacity: 1;
+  border-color: rgba(243, 240, 232, 0.4);
+  color: var(--paper);
+}
+.gal-nav svg {
+  width: 13px;
+}
+/* The name sits in the room, over the light on the floor, like a title card. */
+.gal-caption {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 3;
+  display: grid;
+  justify-items: center;
+  padding: clamp(30px, 7%, 80px) 6% clamp(6px, 1.4vh, 18px);
+  text-align: center;
+  background: radial-gradient(ellipse 62% 86% at 50% 100%, rgba(14, 16, 12, 0.58), transparent 74%);
+  pointer-events: none;
+}
+.gal-title {
+  font-family: var(--font-serif), Georgia, serif;
+  font-size: clamp(30px, 4.6vw, 74px);
+  line-height: 0.98;
+  letter-spacing: -0.04em;
+}
+/* The name comes into focus as its room reaches the middle. */
+.js .gal-title .char {
+  opacity: 0;
+  filter: blur(9px);
+  transform: translate3d(0, 0.26em, 0);
+  transition:
+    opacity 0.7s var(--ease),
+    filter 0.9s var(--ease),
+    transform 1s var(--ease);
+  transition-delay: calc(var(--ci) * 26ms);
+}
+.js .gal-slide.is-on .gal-title .char {
+  opacity: 1;
+  filter: blur(0);
   transform: none;
 }
-.reel-progress {
-  position: absolute;
-  left: var(--gutter);
-  right: var(--gutter);
-  bottom: 34px;
-  height: 1px;
-  background: var(--line);
+@supports (animation-timeline: view()) {
+  .gal {
+    view-timeline-name: --gal;
+    /* Measure against the whole screen, not the header's scroll padding. */
+    view-timeline-inset: 0px;
+  }
+  .gal-rail {
+    perspective: 1500px;
+  }
+  /* Only the centre of the rail carries a name. */
+  .gal-caption {
+    animation: gal-name linear both;
+    animation-timeline: view(x);
+    animation-range: cover;
+  }
+  @keyframes gal-name {
+    0%,
+    32% {
+      opacity: 0;
+      transform: translate3d(0, 14px, 0);
+    }
+    46%,
+    54% {
+      opacity: 1;
+      transform: translate3d(0, 0, 0);
+    }
+    68%,
+    100% {
+      opacity: 0;
+      transform: translate3d(0, 14px, 0);
+    }
+  }
+  /* Only the room in the middle of the rail is in the light; the others are
+     barely there — depth, not decoration. */
+  .gal-slide {
+    animation: gal-focus linear both;
+    animation-timeline: view(x);
+    animation-range: cover;
+    transform-style: preserve-3d;
+  }
+  @keyframes gal-focus {
+    0% {
+      opacity: 0.04;
+      transform: translate3d(0, 0, -440px) rotateY(-32deg);
+    }
+    /* Falls away quickly: one room in the light, the rest standing back. */
+    28% {
+      opacity: 0.16;
+    }
+    45%,
+    55% {
+      opacity: 1;
+      transform: translate3d(0, 0, 0) rotateY(0deg);
+    }
+    72% {
+      opacity: 0.16;
+    }
+    100% {
+      opacity: 0.04;
+      transform: translate3d(0, 0, -440px) rotateY(32deg);
+    }
+  }
+  /* The hall comes up out of the hero's night at half the scroll's speed, so the
+     laptop is there to meet the reader instead of waiting further down. It only
+     starts to show once the hero has gone fully dark. */
+  .gal-band {
+    animation: gal-rise linear both;
+    animation-timeline: --gal;
+    animation-range: cover;
+  }
+  .gal-light {
+    animation: gal-air linear both;
+    animation-timeline: --gal;
+    animation-range: cover 2% cover 20%;
+  }
+  /* An arch of light opens on the room as it arrives, and the laptop is inside
+     it. A mask, not a clip: a clip-path can only cut a hard line, and a hard
+     line across the room is the one thing that breaks the immersion. The dome
+     grows out of the floor with a feathered edge and ends bigger than the room,
+     so it finishes revealing everything and leaves no trace. Only the rooms on
+     show are choreographed — this cannot run on the compositor, and nine of them
+     per frame is what a wide screen felt; the rest rest open at four per cent. */
+  .gal-slide.is-on .gal-room {
+    -webkit-mask-image: radial-gradient(ellipse at 50% 100%, #000 56%, transparent 100%);
+    mask-image: radial-gradient(ellipse at 50% 100%, #000 56%, transparent 100%);
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    -webkit-mask-position: 50% 100%;
+    mask-position: 50% 100%;
+    -webkit-mask-size: 200% 260%;
+    mask-size: 200% 260%;
+    animation: gal-arch cubic-bezier(0.33, 1, 0.68, 1) both;
+    animation-timeline: --gal;
+    animation-range: cover 17% cover 44%;
+  }
+  .gal-slide.is-on .laptop-lid {
+    animation: gal-lid cubic-bezier(0.33, 1, 0.68, 1) both;
+    animation-timeline: --gal;
+    animation-range: cover 26% cover 44%;
+  }
+  .gal-slide.is-on .screen-power {
+    animation: gal-power linear both;
+    animation-timeline: --gal;
+    animation-range: cover 38% cover 46%;
+  }
+  .gal-slide.is-on .screen-power::after {
+    animation: gal-flash linear both;
+    animation-timeline: --gal;
+    animation-range: cover 37% cover 49%;
+  }
+  .gal-slide.is-on .showcase-glow {
+    animation: gal-glow linear both;
+    animation-timeline: --gal;
+    animation-range: cover 34% cover 49%;
+  }
+  /* The name belongs to the lit screen, not to the arch: its own element, so the
+     rail's fade and this arrival multiply instead of overwriting each other. */
+  .gal-slide.is-on .gal-title {
+    animation: gal-wake linear both;
+    animation-timeline: --gal;
+    animation-range: cover 38% cover 48%;
+  }
+  .gal-slide::before,
+  .gal-slide::after {
+    animation: gal-spill linear both;
+    animation-timeline: view(x);
+    animation-range: cover;
+  }
+  @keyframes gal-spill {
+    0%,
+    34% {
+      opacity: 0;
+    }
+    46%,
+    54% {
+      opacity: 1;
+    }
+    66%,
+    100% {
+      opacity: 0;
+    }
+  }
 }
-.reel-progress i {
-  display: block;
-  height: 100%;
-  background: var(--ink);
-  transform-origin: left;
-  transform: scaleX(var(--p, 0));
+@keyframes gal-rise {
+  /* Held well above its own box at the start, so the hall is already there when
+     the hero's night finishes, and let down into place at half the scroll's
+     speed. It stays dark until the hero is fully out. */
+  0% {
+    opacity: 0;
+    transform: translate3d(0, -64svh, 0);
+    animation-timing-function: cubic-bezier(0.5, 0.5, 0.75, 1);
+  }
+  4% {
+    opacity: 0;
+    animation-timing-function: linear;
+  }
+  16% {
+    opacity: 1;
+  }
+  68%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
 }
-
+@keyframes gal-arch {
+  from {
+    -webkit-mask-size: 64% 12%;
+    mask-size: 64% 12%;
+  }
+  to {
+    -webkit-mask-size: 200% 260%;
+    mask-size: 200% 260%;
+  }
+}
+@keyframes gal-lid {
+  from {
+    transform: rotateX(-87deg);
+  }
+  to {
+    transform: rotateX(0deg);
+  }
+}
+@keyframes gal-power {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+@keyframes gal-flash {
+  0%,
+  100% {
+    opacity: 0;
+  }
+  50% {
+    opacity: 0.85;
+  }
+}
+@keyframes gal-glow {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 0.9;
+  }
+}
+@keyframes gal-air {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes gal-wake {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
 /* ————— Home · manifesto ————— */
+/* Dawn: the paper swells up over the night as the studio note arrives, so the
+   scene changes on an arch instead of a straight edge. */
+.manifesto::before {
+  content: "";
+  position: absolute;
+  /* Flush with the page: any wider and the page could scroll sideways. */
+  left: 0;
+  right: 0;
+  bottom: 100%;
+  height: clamp(84px, 17vw, 280px);
+  background: var(--paper);
+  border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+  transform-origin: 50% 100%;
+  transform: scaleY(1);
+  pointer-events: none;
+}
+@supports (animation-timeline: view()) {
+  .manifesto {
+    view-timeline-name: --studio;
+    view-timeline-inset: 0px;
+  }
+  .manifesto::before {
+    animation: dawn cubic-bezier(0.33, 1, 0.68, 1) both;
+    animation-timeline: --studio;
+    animation-range: entry 0% entry 84%;
+  }
+}
+@keyframes dawn {
+  from {
+    transform: scaleY(0);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}
 .manifesto {
+  position: relative;
+  z-index: 2;
   display: grid;
   grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
-  gap: clamp(40px, 8vw, 140px);
+  gap: clamp(48px, 9vw, 160px);
   align-items: center;
-  padding: clamp(110px, 18vh, 200px) var(--gutter);
+  /* The dawn arch above already gives the scene its air. */
+  padding: clamp(70px, 10vh, 132px) var(--gutter) clamp(140px, 24vh, 260px);
   background: var(--paper);
 }
 .manifesto-window {
@@ -1344,7 +1867,6 @@ html[data-intro="seen"] .intro {
   display: inline;
   overflow: visible;
 }
-
 
 /* ————— Inner page hero ————— */
 .page-hero {
@@ -1508,70 +2030,6 @@ html[data-intro="seen"] .intro {
 }
 .showcase-room:hover .showcase-tilt {
   transform: rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) scale(1.07);
-}
-/* A small room of mirrors: folded at rest, opening when the pointer arrives. */
-.showcase-mirror {
-  position: absolute;
-  top: 46%;
-  z-index: 2;
-  width: 30%;
-  aspect-ratio: 0.82;
-  overflow: hidden;
-  translate: 0 -50%;
-  border-radius: 3px;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02));
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.14);
-  opacity: calc(var(--power, 1) * 0.55);
-  transition:
-    transform 1.2s var(--ease),
-    opacity 0.9s var(--ease);
-  pointer-events: none;
-}
-.showcase-mirror.is-left {
-  right: 81%;
-  transform-origin: 100% 50%;
-  transform: rotateY(78deg);
-}
-.showcase-mirror.is-right {
-  left: 81%;
-  transform-origin: 0% 50%;
-  transform: rotateY(-78deg);
-}
-.showcase-room:hover .showcase-mirror {
-  opacity: var(--power, 1);
-}
-.showcase-room:hover .showcase-mirror.is-left {
-  transform: rotateY(56deg);
-}
-.showcase-room:hover .showcase-mirror.is-right {
-  transform: rotateY(-56deg);
-}
-.showcase-reflection {
-  position: absolute !important;
-  top: 50%;
-  width: 150%;
-  translate: 0 -50%;
-  transform: scaleX(-1);
-  opacity: 0.78;
-  filter: brightness(0.82);
-}
-.showcase-mirror.is-left .showcase-reflection {
-  right: -6%;
-}
-.showcase-mirror.is-right .showcase-reflection {
-  left: -6%;
-}
-.showcase-mirror-sheen {
-  position: absolute;
-  inset: 0;
-  background:
-    linear-gradient(104deg, transparent 20%, rgba(255, 255, 255, 0.12) 32%, transparent 44%),
-    linear-gradient(90deg, rgba(20, 22, 18, 0.88), transparent 62%);
-}
-.showcase-mirror.is-right .showcase-mirror-sheen {
-  background:
-    linear-gradient(-104deg, transparent 20%, rgba(255, 255, 255, 0.12) 32%, transparent 44%),
-    linear-gradient(-90deg, rgba(20, 22, 18, 0.88), transparent 62%);
 }
 .shot {
   position: absolute;
@@ -1851,7 +2309,13 @@ html[data-arrival="dive"] .stage-glow {
 .showcase-room.is-diving .showcase-device {
   translate: -50% -50%;
 }
-.is-diving .showcase-device {
+/* Written through .dive: the carousel sizes its laptop again inside a phone
+   media query further down, and at equal weight that rule won — the copy never
+   flew to where the project's laptop would be, and landing jumped. It must NOT
+   share its selector with the translate rule above: the minifier merges rules
+   with the same selector and the translate is lost (the copy then sat 10% of
+   its height off the real laptop on a phone). */
+.dive .is-diving .showcase-device {
   left: var(--dx);
   top: var(--dy);
   width: var(--dw);
@@ -1861,36 +2325,16 @@ html[data-arrival="dive"] .stage-glow {
     top 0.95s var(--ease-io),
     width 0.95s var(--ease-io);
 }
-.is-diving.is-settling .showcase-device {
+.dive .is-diving.is-settling .showcase-device {
   transition-duration: 0.45s;
   transition-timing-function: var(--ease);
 }
 .is-diving .showcase-tilt {
   transform: none;
 }
-.is-diving .showcase-mirror {
-  opacity: 1;
-}
-.is-diving .showcase-mirror.is-left {
-  transform: rotateY(56deg);
-}
-.is-diving .showcase-mirror.is-right {
-  transform: rotateY(-56deg);
-}
-.is-diving.is-deep .showcase-mirror {
-  opacity: 0;
-  transition:
-    transform 0.9s var(--ease),
-    opacity 0.5s var(--ease);
-}
-.is-diving.is-deep .showcase-mirror.is-left {
-  transform: rotateY(84deg);
-}
-.is-diving.is-deep .showcase-mirror.is-right {
-  transform: rotateY(-84deg);
-}
 .is-diving .showcase-hint,
 .is-diving .showcase-top,
+.is-diving .gal-caption,
 .is-diving .showcase-ticks {
   opacity: 0;
   transition: opacity 0.35s var(--ease);
@@ -1958,9 +2402,9 @@ html[data-arrival="dive"] .stage-glow {
   object-fit: cover;
 }
 
-/* ————— Work page · the laptop in a room of mirrors ————— */
+/* ————— Work page · the laptop in the light ————— */
 .stage {
-  --lw: min(58vw, 104svh, 1120px);
+  --lw: min(66vw, 112svh, 1280px);
   position: relative;
   height: calc(100svh + var(--m) * 60svh);
   background: var(--night);
@@ -1996,7 +2440,7 @@ html[data-arrival="dive"] .stage-glow {
   translate: -50% -50%;
   scale: 2.2;
   filter: blur(34px) saturate(1.5);
-  opacity: calc(var(--power, 0) * 0.62);
+  opacity: calc(var(--power, 0) * 0.62 * var(--land, 1));
   container-type: size;
   pointer-events: none;
 }
@@ -2115,15 +2559,7 @@ html[data-arrival="dive"] .stage-glow {
   background:
     radial-gradient(ellipse 18% 72% at 50% 0%, rgba(255, 232, 196, 0.22), transparent 72%),
     radial-gradient(ellipse 42% 90% at 50% 0%, rgba(255, 232, 196, 0.08), transparent 76%);
-  opacity: var(--a, 0);
-  pointer-events: none;
-}
-.stage-dust {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  width: 100%;
-  height: 100%;
+  opacity: calc(var(--a, 0) * var(--land, 1));
   pointer-events: none;
 }
 .laptop-screen::after {
@@ -2137,7 +2573,8 @@ html[data-arrival="dive"] .stage-glow {
 .laptop-main {
   perspective: 1800px;
   perspective-origin: 50% 86%;
-  -webkit-box-reflect: below 0px linear-gradient(transparent 58%, rgba(255, 255, 255, 0.22));
+  -webkit-box-reflect: below 0px
+    linear-gradient(transparent 58%, rgba(255, 255, 255, calc(0.22 * var(--land, 1))));
 }
 .screen {
   position: absolute;
@@ -2182,89 +2619,8 @@ html[data-arrival="dive"] .stage-glow {
   top: 94%;
   height: 46%;
   background: radial-gradient(ellipse 50% 60% at 50% 0%, rgba(255, 255, 255, 0.07), transparent 70%);
-  opacity: var(--a, 0);
+  opacity: calc(var(--a, 0) * var(--land, 1));
   pointer-events: none;
-}
-.mirror {
-  position: absolute;
-  top: 45%;
-  width: clamp(220px, 32vw, 600px);
-  height: calc(var(--lw) * 0.68);
-  translate: 0 -50%;
-  opacity: var(--wing, 0);
-  will-change: transform, opacity;
-}
-.mirror-left {
-  right: calc(50% + var(--lw) / 2 + 1.5vw);
-  transform-origin: 100% 50%;
-  transform: rotateY(calc(88deg - var(--wing, 0) * 24deg));
-}
-.mirror-right {
-  left: calc(50% + var(--lw) / 2 + 1.5vw);
-  transform-origin: 0% 50%;
-  transform: rotateY(calc(-88deg + var(--wing, 0) * 24deg));
-}
-.mirror-inner {
-  position: absolute;
-  inset: 0;
-  overflow: hidden;
-  border-radius: 2px;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.015));
-  box-shadow:
-    inset 0 0 0 1px rgba(255, 255, 255, 0.13),
-    inset 0 0 60px rgba(0, 0, 0, 0.5);
-}
-.mirror-laptop {
-  position: absolute !important;
-  top: 50%;
-  width: 88%;
-  translate: 0 -50%;
-  transform: scaleX(-1);
-  opacity: 0.7;
-  filter: brightness(0.82);
-}
-.mirror-left .mirror-laptop {
-  right: 7%;
-}
-.mirror-right .mirror-laptop {
-  left: 7%;
-}
-.mirror-laptop.is-ghost {
-  width: 64%;
-  opacity: 0.26;
-  filter: brightness(0.6) blur(0.5px);
-}
-.mirror-left .mirror-laptop.is-ghost {
-  right: auto;
-  left: -22%;
-}
-.mirror-right .mirror-laptop.is-ghost {
-  left: auto;
-  right: -22%;
-}
-.mirror-sheen {
-  position: absolute;
-  inset: 0;
-  z-index: 2;
-  background: linear-gradient(
-    104deg,
-    transparent 18%,
-    rgba(255, 255, 255, 0.11) 30%,
-    transparent 42%,
-    transparent 68%,
-    rgba(255, 255, 255, 0.05) 76%,
-    transparent 84%
-  );
-}
-.mirror-inner::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: 3;
-  background: linear-gradient(90deg, rgba(20, 22, 18, 0.9), transparent 60%);
-}
-.mirror-right .mirror-inner::after {
-  background: linear-gradient(-90deg, rgba(20, 22, 18, 0.9), transparent 60%);
 }
 .stage-ui {
   position: absolute;
@@ -2277,8 +2633,8 @@ html[data-arrival="dive"] .stage-glow {
   align-items: end;
   gap: 20px;
   font-size: 11px;
-  opacity: var(--wing, 0);
-  transform: translate3d(0, calc((1 - var(--wing, 0)) * 18px), 0);
+  opacity: calc(var(--power, 0) * var(--land, 1));
+  transform: translate3d(0, calc((1 - var(--power, 0) * var(--land, 1)) * 18px), 0);
 }
 .stage-title {
   display: grid;
@@ -2321,7 +2677,7 @@ html[data-arrival="dive"] .stage-glow {
   letter-spacing: 0.16em;
   text-transform: uppercase;
   color: rgba(243, 240, 232, 0.55);
-  opacity: calc(var(--wing, 0) * (1 - min(1, var(--p, 0) * 12)));
+  opacity: calc(var(--power, 0) * (1 - min(1, var(--p, 0) * 12)));
   pointer-events: none;
 }
 .stage-cue i {
@@ -2541,11 +2897,14 @@ html[data-arrival="dive"] .stage-glow {
   padding: 0 var(--gutter) clamp(90px, 15vh, 160px);
   align-items: center;
 }
+/* The portrait stands in an arch, and arrives on the same one the work does: a
+   slim arch of picture widens into the whole frame as the picture settles out of
+   its own zoom (see [data-arch]). */
 .portrait-frame {
   position: relative;
   aspect-ratio: 4 / 5;
   overflow: hidden;
-  border-radius: 3px;
+  border-radius: clamp(70px, 16vw, 200px) clamp(70px, 16vw, 200px) 3px 3px;
   background: var(--paper-dark);
 }
 .portrait-drift {
@@ -2566,9 +2925,11 @@ html[data-arrival="dive"] .stage-glow {
 .portrait-copy p {
   white-space: pre-line;
   color: var(--ink-soft);
-  font-size: 16px;
-  line-height: 1.75;
-  max-width: 52ch;
+  font-family: var(--font-serif), Georgia, serif;
+  font-size: clamp(21px, 2.1vw, 31px);
+  line-height: 1.4;
+  letter-spacing: -0.015em;
+  max-width: 30ch;
 }
 .service-list {
   padding: 0 var(--gutter) clamp(90px, 15vh, 160px);
@@ -2616,19 +2977,22 @@ html[data-arrival="dive"] .stage-glow {
 .contact-main {
   min-height: 70vh;
 }
-/* Contact · the studio courtyard at dusk, with a short form resting on it */
-.contact-hero {
+/* Contact · the studio on one side, a clean sheet to write on, on the other */
+.contact {
   position: relative;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(340px, 460px);
-  align-items: center;
-  gap: clamp(40px, 7vw, 120px);
+  grid-template-columns: minmax(0, 1.02fr) minmax(0, 0.98fr);
   min-height: 100svh;
-  padding: clamp(130px, 18vh, 180px) var(--gutter) clamp(70px, 10vh, 110px);
   overflow: hidden;
   isolation: isolate;
   background: var(--night);
   color: var(--paper);
+}
+.contact-stage {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  padding: clamp(150px, 20vh, 220px) clamp(32px, 4.6vw, 88px) clamp(56px, 8vh, 96px);
 }
 .contact-bg {
   position: absolute;
@@ -2641,212 +3005,181 @@ html[data-arrival="dive"] .stage-glow {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  animation: contact-settle 3.2s var(--ease) both;
+  animation: contact-settle 3s var(--ease) both;
 }
+/* Enough night over the photograph that every word stays crisp. */
 .contact-bg::after {
   content: "";
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(ellipse 55% 60% at 80% 55%, rgba(236, 176, 104, 0.16), transparent 70%),
-    linear-gradient(90deg, rgba(14, 16, 12, 0.86) 0%, rgba(14, 16, 12, 0.55) 55%, rgba(14, 16, 12, 0.35) 100%),
-    linear-gradient(0deg, rgba(14, 16, 12, 0.7), transparent 45%);
+    linear-gradient(0deg, rgba(14, 16, 12, 0.9) 10%, rgba(14, 16, 12, 0.58) 60%, rgba(14, 16, 12, 0.62)),
+    linear-gradient(90deg, rgba(14, 16, 12, 0.6), transparent 45%),
+    radial-gradient(ellipse 70% 50% at 25% 100%, rgba(236, 176, 104, 0.14), transparent 70%);
 }
 @keyframes contact-settle {
   from {
-    scale: 1.12;
-    opacity: 0.4;
+    scale: 1.1;
+    opacity: 0.3;
   }
   to {
     scale: 1;
     opacity: 1;
   }
 }
-.contact-meta {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 12px 22px;
-  margin-bottom: clamp(28px, 5vh, 54px);
-  font-size: 12px;
-  color: rgba(243, 240, 232, 0.72);
+.contact-intro {
+  position: relative;
+  width: 100%;
+  max-width: 620px;
 }
-.contact-status {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  padding: 9px 16px;
-  border: 1px solid rgba(243, 240, 232, 0.22);
-  border-radius: 40px;
-  background: rgba(243, 240, 232, 0.08);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+.contact-intro .eyebrow {
+  display: block;
+  margin-bottom: clamp(18px, 3vh, 30px);
+  color: rgba(243, 240, 232, 0.66);
+}
+.contact-intro h1 {
+  font-size: clamp(50px, 5.6vw, 104px);
   color: var(--paper);
-}
-.contact-status i,
-.contact-card-head i {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: #9ccf84;
-  animation: live 2s ease-out infinite;
-}
-.contact-time b {
-  margin-left: 4px;
-  font-weight: 400;
-  color: var(--paper);
-  font-variant-numeric: tabular-nums;
-}
-.contact-hero h1 {
-  font-size: clamp(54px, 6.2vw, 112px);
-  color: var(--paper);
-  text-shadow: 0 2px 40px rgba(0, 0, 0, 0.25);
 }
 .contact-lead {
-  max-width: 40ch;
-  margin-top: clamp(24px, 4vh, 38px);
-  font-size: clamp(16px, 1.3vw, 19px);
-  line-height: 1.6;
-  color: rgba(243, 240, 232, 0.76);
+  max-width: 34ch;
+  margin-top: clamp(20px, 3.4vh, 32px);
+  font-size: clamp(15px, 1.2vw, 18px);
+  line-height: 1.65;
+  color: rgba(243, 240, 232, 0.74);
 }
-.contact-links {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 10px;
-  margin-top: clamp(30px, 5vh, 50px);
+/* The two ways to reach the studio, written out. */
+.contact-direct {
+  margin-top: clamp(34px, 6vh, 62px);
+  border-top: 1px solid rgba(243, 240, 232, 0.16);
 }
-.contact-links a {
-  display: inline-flex;
+.contact-direct a {
+  display: grid;
+  grid-template-columns: minmax(74px, 0.28fr) 1fr auto;
   align-items: center;
-  gap: 10px;
-  height: 50px;
-  padding: 0 22px 0 18px;
-  border: 1px solid rgba(243, 240, 232, 0.24);
-  border-radius: 50px;
-  background: rgba(243, 240, 232, 0.06);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  font-size: 14px;
+  gap: 16px;
+  padding: clamp(14px, 2vh, 20px) 0;
+  border-bottom: 1px solid rgba(243, 240, 232, 0.16);
+  transition: padding-left 0.5s var(--ease);
+}
+.contact-direct a:hover {
+  padding-left: 10px;
+}
+.contact-direct small {
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(243, 240, 232, 0.55);
+}
+.contact-direct b {
+  font-weight: 400;
+  font-size: clamp(15px, 1.3vw, 19px);
+  overflow-wrap: anywhere;
+}
+.contact-direct svg {
+  width: 14px;
+  opacity: 0.6;
   transition:
-    background 0.45s var(--ease),
-    color 0.45s,
-    border-color 0.45s;
+    transform 0.5s var(--ease),
+    opacity 0.4s;
 }
-.contact-links a.is-icon {
-  width: 50px;
-  padding: 0;
-  justify-content: center;
+.contact-direct a:hover svg {
+  opacity: 1;
+  transform: translate(3px, -3px);
 }
-.contact-links a:hover {
-  border-color: var(--paper);
-  background: var(--paper);
-  color: var(--night);
-}
-.contact-links .social-icon {
-  width: 19px;
-  height: 19px;
+
+/* The sheet: paper, hairlines, nothing else. */
+.contact-panel {
+  display: flex;
+  align-items: center;
+  padding: clamp(112px, 15vh, 168px) clamp(20px, 3.4vw, 70px) clamp(44px, 7vh, 96px) 0;
 }
 .contact-card {
-  position: relative;
   display: grid;
-  gap: 16px;
-  padding: clamp(26px, 3vw, 40px);
-  overflow: hidden;
-  border: 1px solid rgba(243, 240, 232, 0.16);
-  border-radius: 30px;
-  background: rgba(20, 22, 18, 0.5);
-  box-shadow: 0 50px 120px -40px rgba(0, 0, 0, 0.7);
-  backdrop-filter: blur(26px) saturate(1.2);
-  -webkit-backdrop-filter: blur(26px) saturate(1.2);
+  gap: clamp(18px, 2.4vh, 26px);
+  width: 100%;
+  max-width: 500px;
+  padding: clamp(28px, 3vw, 48px);
+  border-radius: clamp(20px, 2vw, 30px);
+  background: var(--paper);
+  color: var(--ink);
+  box-shadow: 0 60px 120px -50px rgba(0, 0, 0, 0.85);
   transition: opacity 0.4s;
 }
 .contact-card.is-sending {
-  opacity: 0.6;
+  opacity: 0.5;
 }
 .contact-card-head {
   display: grid;
   gap: 10px;
-  margin-bottom: 8px;
+  margin-bottom: clamp(4px, 1vh, 12px);
 }
 .contact-card-head h2 {
-  font-family: var(--font-serif), Georgia, serif;
-  font-size: clamp(32px, 2.6vw, 42px);
-  font-weight: 400;
+  font-size: clamp(30px, 2.5vw, 42px);
   line-height: 1;
-  letter-spacing: -0.03em;
 }
 .contact-card-head span {
-  display: inline-flex;
-  align-items: center;
-  gap: 9px;
   font-size: 12.5px;
-  color: rgba(243, 240, 232, 0.62);
+  color: var(--muted);
 }
 .contact-field {
   display: grid;
-  gap: 8px;
+  gap: 6px;
 }
 .contact-field > span {
-  font-size: 11px;
-  letter-spacing: 0.12em;
+  font-size: 10px;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: rgba(243, 240, 232, 0.6);
+  color: var(--muted);
 }
 .contact-field input,
 .contact-field select,
 .contact-field textarea {
   width: 100%;
-  padding: 15px 16px;
-  border: 1px solid rgba(243, 240, 232, 0.14);
-  border-radius: 14px;
-  background: rgba(243, 240, 232, 0.07);
-  color: var(--paper);
+  padding: 10px 0;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  border-radius: 0;
+  background: transparent;
+  color: var(--ink);
   font: inherit;
   font-size: 16px;
   outline: none;
-  transition:
-    border-color 0.35s,
-    background 0.35s;
+  transition: border-color 0.35s;
 }
 .contact-field textarea {
-  min-height: 118px;
-  line-height: 1.5;
+  min-height: 92px;
+  line-height: 1.6;
   resize: vertical;
 }
 .contact-field textarea::placeholder {
-  color: rgba(243, 240, 232, 0.38);
+  color: rgba(38, 42, 34, 0.35);
 }
 .contact-field input:focus,
 .contact-field select:focus,
 .contact-field textarea:focus {
-  border-color: rgba(243, 240, 232, 0.55);
-  background: rgba(243, 240, 232, 0.11);
+  border-color: var(--ink);
 }
 .contact-field.is-missing input,
 .contact-field.is-missing textarea {
-  border-color: #e0896f;
+  border-color: #b4573a;
 }
 .contact-field select {
-  padding-right: 44px;
+  padding-right: 28px;
   appearance: none;
   -webkit-appearance: none;
   background-image:
-    linear-gradient(45deg, transparent 50%, var(--paper) 50%),
-    linear-gradient(-45deg, transparent 50%, var(--paper) 50%);
+    linear-gradient(45deg, transparent 50%, var(--ink) 50%),
+    linear-gradient(-45deg, transparent 50%, var(--ink) 50%);
   background-position:
-    calc(100% - 22px) 50%,
-    calc(100% - 17px) 50%;
+    calc(100% - 9px) calc(50% + 2px),
+    calc(100% - 4px) calc(50% + 2px);
   background-size: 5px 5px;
   background-repeat: no-repeat;
   cursor: pointer;
 }
 .contact-field select.is-empty {
-  color: rgba(243, 240, 232, 0.45);
-}
-.contact-field option {
-  background: var(--night);
-  color: var(--paper);
+  color: rgba(38, 42, 34, 0.42);
 }
 .contact-trap {
   position: absolute;
@@ -2856,12 +3189,12 @@ html[data-arrival="dive"] .stage-glow {
   opacity: 0;
 }
 .contact-note {
-  color: #f0a68f;
+  color: #a24f32;
   font-size: 13px;
   line-height: 1.55;
 }
 .contact-note a {
-  color: var(--paper);
+  color: var(--ink);
   text-decoration: underline;
   text-underline-offset: 3px;
 }
@@ -2871,15 +3204,14 @@ html[data-arrival="dive"] .stage-glow {
   justify-content: center;
   align-items: center;
   gap: 12px;
-  height: 58px;
-  margin-top: 6px;
+  height: 56px;
+  margin-top: clamp(4px, 1vh, 10px);
   overflow: hidden;
   isolation: isolate;
   border-radius: 60px;
-  background: var(--paper);
-  color: var(--night);
-  font-size: 15px;
-  transition: color 0.5s var(--ease);
+  background: var(--ink);
+  color: var(--paper);
+  font-size: 14.5px;
 }
 .contact-send::before {
   content: "";
@@ -2890,14 +3222,11 @@ html[data-arrival="dive"] .stage-glow {
   transform: translateY(102%);
   transition: transform 0.7s var(--ease);
 }
-.contact-send:hover {
-  color: #fff;
-}
 .contact-send:hover::before {
   transform: none;
 }
 .contact-send svg {
-  width: 16px;
+  width: 15px;
   transition: transform 0.6s var(--ease);
 }
 .contact-send:hover svg {
@@ -2912,94 +3241,54 @@ html[data-arrival="dive"] .stage-glow {
   align-items: center;
   gap: 6px;
   font-size: 13px;
-  color: rgba(243, 240, 232, 0.66);
+  color: var(--muted);
   transition: color 0.4s;
 }
 .contact-alt:hover {
-  color: var(--paper);
+  color: var(--ink);
 }
 .contact-alt svg {
   width: 12px;
 }
+/* Sent: the sun comes up on the sheet. */
 .contact-sent {
-  align-content: end;
   justify-items: start;
-  min-height: 520px;
   gap: 14px;
 }
 .contact-sent .eyebrow {
-  color: rgba(243, 240, 232, 0.6);
+  color: var(--muted);
 }
 .contact-sent h2 {
-  font-family: var(--font-serif), Georgia, serif;
-  font-size: clamp(44px, 4vw, 64px);
-  font-weight: 400;
-  line-height: 0.95;
-  letter-spacing: -0.04em;
+  font-size: clamp(38px, 3.4vw, 58px);
+  line-height: 0.98;
 }
 .contact-sent p {
-  color: rgba(243, 240, 232, 0.72);
+  color: var(--ink-soft);
   font-size: 15px;
+  line-height: 1.7;
   overflow-wrap: anywhere;
 }
 .contact-sent b {
   font-weight: 400;
-  color: var(--paper);
+  color: var(--ink);
 }
 .contact-again {
-  margin-top: 8px;
+  margin-top: 10px;
   padding-bottom: 4px;
-  border-bottom: 1px solid rgba(243, 240, 232, 0.35);
+  border-bottom: 1px solid var(--line);
   font-size: 14px;
 }
-.contact-sent-sky {
-  position: absolute;
-  left: 50%;
-  top: 30%;
-  z-index: -1;
-  width: 78%;
-  aspect-ratio: 1;
-  translate: -50% -50%;
-}
-.contact-sent-glow {
-  position: absolute;
-  inset: -30%;
-  background: radial-gradient(circle, rgba(236, 176, 104, 0.36), transparent 60%);
-  animation: contact-fade 2s var(--ease) both;
-}
-.contact-sent-disc {
-  position: absolute;
-  inset: 36%;
-  border-radius: 50%;
-  background: radial-gradient(circle at 50% 40%, #f6d6a4, #e0a560 70%);
-  animation: sent-rise 1.8s var(--ease) 0.1s both;
-}
 .contact-sent-sun {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  color: rgba(255, 222, 176, 0.32);
-  animation:
-    contact-fade 1.6s var(--ease) 0.5s both,
-    spin 60s linear infinite;
+  width: clamp(72px, 7vw, 104px);
+  margin-bottom: 6px;
+  color: rgba(38, 42, 34, 0.32);
+  animation: spin 70s linear infinite;
 }
-@keyframes contact-fade {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-@keyframes sent-rise {
-  from {
-    opacity: 0;
-    translate: 0 40%;
-  }
-  to {
-    opacity: 1;
-    translate: 0 0;
-  }
+.contact-sent-sun line {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: intro-ray 0.9s var(--ease) forwards;
+  animation-delay: calc(var(--ri) * 55ms);
 }
 .links-page {
   max-width: 760px;
@@ -3037,6 +3326,7 @@ html[data-arrival="dive"] .stage-glow {
   background: var(--paper);
   border-radius: 0 0 50% 50%;
   transform-origin: top;
+  transform: scaleY(0);
   pointer-events: none;
 }
 .footer-inner {
@@ -3089,27 +3379,28 @@ html[data-arrival="dive"] .stage-glow {
 .footer-glow {
   position: absolute;
   inset: 0;
-  background: radial-gradient(ellipse 50% 60% at 50% 100%, rgba(222, 164, 96, 0.34), transparent 70%);
+  background: radial-gradient(ellipse 46% 52% at 50% 100%, rgba(222, 164, 96, 0.2), transparent 72%);
 }
 .footer-rise {
   position: absolute;
   inset: 0;
   display: grid;
   place-items: center;
-  transform: translateY(40%);
+  transform: translateY(46%);
 }
 .footer-disc {
   position: absolute;
-  width: 34%;
+  width: 26%;
   aspect-ratio: 1;
   border-radius: 50%;
-  background: radial-gradient(circle at 50% 38%, #f8e3bb, #dca864 58%, #b97a3e);
-  box-shadow: 0 0 90px 30px rgba(220, 168, 100, 0.28);
+  background: radial-gradient(circle at 50% 40%, #f3e0c2, #d9a96c 60%, #b47c42);
+  box-shadow: 0 0 80px 22px rgba(220, 168, 100, 0.18);
 }
 .footer-sun {
   position: absolute;
-  width: 92%;
-  color: rgba(236, 200, 140, 0.55);
+  width: 62%;
+  rotate: 20deg;
+  color: rgba(236, 200, 140, 0.24);
 }
 .footer-sea {
   position: absolute;
@@ -3227,7 +3518,78 @@ html[data-arrival="dive"] .stage-glow {
   width: 13px;
 }
 
-
+/* The sunset rises as the footer arrives, driven by scroll on the compositor. */
+@supports (animation-timeline: view()) {
+  .site-footer {
+    view-timeline-name: --footer;
+    view-timeline-inset: 0px;
+  }
+  .footer-curve {
+    animation: footer-curve linear both;
+    animation-timeline: --footer;
+    animation-range: entry 0% entry 62%;
+  }
+  .footer-inner {
+    animation: footer-inner linear both;
+    animation-timeline: --footer;
+    animation-range: entry 0% entry 100%;
+  }
+  .footer-rise {
+    animation: footer-rise linear both;
+    animation-timeline: --footer;
+    animation-range: entry 0% entry 100%;
+  }
+  .footer-sun {
+    animation: footer-sun linear both;
+    animation-timeline: --footer;
+    animation-range: entry 0% entry 100%;
+  }
+  .footer-glow {
+    animation: footer-glow linear both;
+    animation-timeline: --footer;
+    animation-range: entry 10% entry 92%;
+  }
+}
+@keyframes footer-curve {
+  from {
+    transform: scaleY(1);
+  }
+  to {
+    transform: scaleY(0);
+  }
+}
+@keyframes footer-inner {
+  from {
+    transform: translate3d(0, -8%, 0);
+  }
+  to {
+    transform: translate3d(0, 0, 0);
+  }
+}
+@keyframes footer-rise {
+  from {
+    transform: translateY(104%);
+  }
+  to {
+    transform: translateY(46%);
+  }
+}
+@keyframes footer-sun {
+  from {
+    rotate: -40deg;
+  }
+  to {
+    rotate: 20deg;
+  }
+}
+@keyframes footer-glow {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
 
 /* ————— Menu ————— */
 .mobile-menu {
@@ -3294,6 +3656,25 @@ html[data-arrival="dive"] .stage-glow {
     display: none;
   }
 }
+@media (max-width: 899px) {
+  .contact {
+    grid-template-columns: minmax(0, 1fr);
+    min-height: 0;
+  }
+  .contact-stage {
+    min-height: 86svh;
+    padding-top: clamp(118px, 16vh, 170px);
+  }
+  .contact-panel {
+    padding: clamp(28px, 5vh, 54px) clamp(16px, 5vw, 40px) clamp(56px, 9vh, 90px);
+  }
+  .contact-card {
+    max-width: none;
+  }
+  .contact-stage {
+    min-height: 82svh;
+  }
+}
 @media (max-width: 859px) {
   .desktop-nav,
   .nav-cta {
@@ -3341,7 +3722,7 @@ html[data-arrival="dive"] .stage-glow {
   }
   .opening {
     --arch-w: 62vw;
-    height: calc(100svh + 120svh);
+    height: calc(100svh + 110svh);
   }
   .opening-title {
     font-size: clamp(54px, 17vw, 96px);
@@ -3349,21 +3730,7 @@ html[data-arrival="dive"] .stage-glow {
   .opening-sub {
     font-size: 14px;
   }
-  .opening-side {
-    left: var(--gutter) !important;
-    right: var(--gutter) !important;
-    width: auto;
-    translate: none;
-    text-align: center !important;
-    font-size: clamp(28px, 8.4vw, 40px);
-  }
-  .opening-side.is-left {
-    top: 88px;
-  }
-  .opening-side.is-right {
-    top: auto;
-    bottom: 64px;
-  }
+  .opening-side,
   .opening-eyebrow {
     display: none;
   }
@@ -3400,21 +3767,27 @@ html[data-arrival="dive"] .stage-glow {
     width: 46px;
     height: 46px;
   }
-  .reel-intro {
-    width: 78vw;
+  .gal {
+    /* Kept free of each other: a phone room is sized by width, not by height. */
+    --room-w: 87vw;
+    --room-h: min(64svh, 78vw);
+    --pool-x: 40%;
+    --pool-y: 50%;
+    padding: clamp(30px, 6svh, 70px) 0 clamp(30px, 6svh, 70px);
   }
-  .reel-card.is-arch .reel-frame,
-  .reel-card.is-tall .reel-frame {
-    width: 62vw;
+  .gal-rail {
+    gap: 16px;
   }
-  .reel-card.is-wide .reel-frame {
-    width: 80vw;
+  .gal-room .showcase-device {
+    width: 96%;
+    top: 51%;
   }
-  .reel-card.is-tall {
-    margin-top: 8vh;
+  .gal-band::before,
+  .gal-band::after {
+    width: 18px;
   }
-  .reel-card.is-wide {
-    margin-bottom: 8vh;
+  .gal-title {
+    font-size: clamp(26px, 7.6vw, 40px);
   }
   .showcase,
   .showcase.is-flipped {
@@ -3429,9 +3802,6 @@ html[data-arrival="dive"] .stage-glow {
   }
   .showcase-device {
     width: 76%;
-  }
-  .showcase-mirror {
-    display: none;
   }
   .showcase-device {
     translate: -50% -60%;
@@ -3487,26 +3857,12 @@ html[data-arrival="dive"] .stage-glow {
     flex-direction: column;
     align-items: flex-start;
   }
-  .contact-hero {
-    grid-template-columns: minmax(0, 1fr);
-    align-items: start;
-    gap: 48px;
-    padding-top: 118px;
+  .contact-direct a {
+    grid-template-columns: 1fr auto;
+    row-gap: 4px;
   }
-  .contact-bg::after {
-    background:
-      linear-gradient(180deg, rgba(14, 16, 12, 0.72) 0%, rgba(14, 16, 12, 0.5) 40%, rgba(14, 16, 12, 0.88) 100%);
-  }
-  .contact-card {
-    border-radius: 24px;
-  }
-  .contact-links a {
-    height: 46px;
-    padding: 0 18px 0 15px;
-    font-size: 13px;
-  }
-  .contact-links a.is-icon {
-    width: 46px;
+  .contact-direct small {
+    grid-column: 1 / -1;
   }
 }
 @media (max-width: 759px) {
@@ -3518,9 +3874,6 @@ html[data-arrival="dive"] .stage-glow {
     font-size: 30px;
   }
   .stage-cue {
-    display: none;
-  }
-  .mirror {
     display: none;
   }
   .stage-device,
@@ -3551,12 +3904,27 @@ html[data-arrival="dive"] .stage-glow {
   .svc-stage,
   .svc-arch-wrap,
   .svc-drum,
-  .svc-chapters {
+  .svc-chapters,
+  .gal-band,
+  .gal-slide,
+  .gal-slide.is-on .gal-room,
+  .gal-slide.is-on .laptop-lid,
+  .gal-slide.is-on .screen-power,
+  .gal-slide.is-on .showcase-glow,
+  .manifesto::before,
+  .footer-curve,
+  .footer-inner,
+  .footer-rise,
+  .footer-sun,
+  .footer-glow,
+  [data-parallax],
+  [data-words] .w,
+  [data-arch],
+  [data-arch] .media {
     animation: none;
   }
   .intro,
-  .grain,
-  .curtain {
+  .veil {
     display: none;
   }
   .opening {
@@ -3568,17 +3936,9 @@ html[data-arrival="dive"] .stage-glow {
   .stage-sticky {
     position: relative;
   }
-  .reel {
-    height: auto !important;
-  }
-  .reel-sticky {
-    position: relative;
-    height: auto;
-    overflow-x: auto;
-    padding: 100px 0;
-  }
-  .reel-track {
-    position: relative;
+  .gal-slide,
+  .gal-light {
+    opacity: 1;
   }
   .opening-cue i::after {
     animation: none;

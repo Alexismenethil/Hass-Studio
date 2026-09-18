@@ -27,17 +27,27 @@ export function SiteNav({
   }, [locale]);
   // Follow the section under the bar: light text on dark scenes, hide while reading down.
   useEffect(() => {
-    let frame = 0,
-      last = window.scrollY;
+    const bar = header.current;
+    if (!bar) return;
+    let frame = 0;
+    let last = window.scrollY;
+    let zones: { el: HTMLElement; top: number; bottom: number }[] = [];
+    // Where each scene sits on the page, measured once: scrolling then only compares numbers.
+    const measure = () => {
+      zones = Array.from(document.querySelectorAll<HTMLElement>("[data-header]")).map((el) => {
+        const box = el.getBoundingClientRect();
+        const top = box.top + window.scrollY;
+        return { el, top, bottom: top + box.height };
+      });
+      update();
+    };
     const update = () => {
       frame = 0;
       const y = window.scrollY;
-      const bar = header.current;
-      if (!bar) return;
-      const under = document
-        .elementsFromPoint(window.innerWidth / 2, bar.offsetHeight / 2)
-        .find((el) => !bar.contains(el));
-      setDark(under?.closest("[data-header]")?.getAttribute("data-header") === "dark");
+      const line = y + bar.offsetHeight / 2;
+      let scene: HTMLElement | null = null;
+      for (const zone of zones) if (line >= zone.top && line < zone.bottom) scene = zone.el;
+      setDark(scene?.dataset.header === "dark");
       setScrolled(y > 40);
       if (y > 220 && y > last + 4) setHidden(true);
       else if (y < last - 4 || y <= 220) setHidden(false);
@@ -46,15 +56,19 @@ export function SiteNav({
     const schedule = () => {
       if (!frame) frame = requestAnimationFrame(update);
     };
-    update();
-    const settle = window.setTimeout(update, 120);
+    measure();
+    // Sections that size themselves from media settle after hydration.
+    const settle = window.setTimeout(measure, 400);
+    const sizes = new ResizeObserver(() => {
+      if (!frame) frame = requestAnimationFrame(measure);
+    });
+    sizes.observe(document.body);
     window.addEventListener("scroll", schedule, { passive: true });
-    window.addEventListener("resize", schedule);
     return () => {
       cancelAnimationFrame(frame);
       window.clearTimeout(settle);
+      sizes.disconnect();
       window.removeEventListener("scroll", schedule);
-      window.removeEventListener("resize", schedule);
     };
   }, [path]);
   useEffect(() => {
@@ -62,6 +76,7 @@ export function SiteNav({
   }, [path]);
   const links = [
     ["work", "/" + locale + "/work"],
+    ["services", "/" + locale + "/services"],
     ["studio", "/" + locale + "/studio"],
     ["contact", "/" + locale + "/contact"],
   ] as const;
@@ -97,7 +112,7 @@ export function SiteNav({
           {links.map(([k, href]) => (
             <Link
               key={k}
-              className={path.startsWith(href) || (k === "work" && path.includes("/services/")) ? "active" : ""}
+              className={path.startsWith(href) ? "active" : ""}
               href={href}
             >
               {t[k]}

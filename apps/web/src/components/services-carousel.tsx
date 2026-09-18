@@ -98,6 +98,8 @@ export function ServicesCarousel({ slides, locale }: { slides: ServiceSlide[]; l
   useEffect(() => {
     const surface = canvas.current;
     if (!surface || !n || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    // Phones get the crossfading photographs underneath instead of a second shader.
+    if (!window.matchMedia("(min-width: 768px) and (pointer: fine)").matches) return;
     const r = createRenderer(surface, DISSOLVE);
     renderer.current = r;
     if (!r) return;

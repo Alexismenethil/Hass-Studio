@@ -4,7 +4,7 @@ import { getContent } from "@/lib/server/content";
 import { text, copy, pad, type Locale } from "@/lib/content";
 import { Arrow } from "@/components/icon";
 import { Media } from "@/components/media";
-import { Chars } from "@/components/text";
+import { Chars, Words } from "@/components/text";
 export default async function Studio({ params }: { params: Promise<{ lang: Locale }> }) {
   const { lang } = await params;
   const { settings: s, categories, works } = await getContent();
@@ -23,8 +23,8 @@ export default async function Studio({ params }: { params: Promise<{ lang: Local
         </h1>
       </section>
       <section className="portrait-section" data-header="light">
-        <div className="portrait-frame" data-reveal>
-          <div className="portrait-drift" data-parallax="6">
+        <div className="portrait-frame" data-arch>
+          <div className="portrait-drift" data-parallax>
             <Media
               src={s.portrait || s.detailImage}
               sizes="(max-width:768px) 90vw, 40vw"
@@ -35,7 +35,9 @@ export default async function Studio({ params }: { params: Promise<{ lang: Local
         </div>
         <div className="portrait-copy">
           <h2 data-reveal>{s.name}</h2>
-          <p data-reveal="0.06">{text(s.studioText, lang)}</p>
+          <p data-words>
+            <Words text={text(s.studioText, lang)} />
+          </p>
         </div>
       </section>
       <section className="service-list" data-header="light">

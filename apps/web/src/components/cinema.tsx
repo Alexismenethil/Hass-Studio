@@ -24,26 +24,6 @@ export function Sun({ className = "" }: { className?: string }) {
   );
 }
 
-/** A light, GPU-composited layer of film grain. */
-export function Grain() {
-  const layer = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    const canvas = document.createElement("canvas");
-    canvas.width = canvas.height = 160;
-    const ctx = canvas.getContext("2d");
-    if (!ctx || !layer.current) return;
-    const image = ctx.createImageData(160, 160);
-    for (let i = 0; i < image.data.length; i += 4) {
-      const light = Math.random() > 0.5;
-      image.data[i] = image.data[i + 1] = image.data[i + 2] = light ? 255 : 0;
-      image.data[i + 3] = Math.random() * 38;
-    }
-    ctx.putImageData(image, 0, 0);
-    layer.current.style.backgroundImage = `url(${canvas.toDataURL()})`;
-  }, []);
-  return <div ref={layer} className="grain" aria-hidden="true" />;
-}
-
 type Dive = { layer: HTMLDivElement; room: HTMLElement; started: number; timers: number[] };
 
 const inView = (el: Element) => {
@@ -51,12 +31,29 @@ const inView = (el: Element) => {
   return r.width > 0 && r.bottom > 0 && r.top < window.innerHeight;
 };
 
+/** The small viewport's height — what the stage is sized by (100svh). On a phone
+ *  innerHeight is the large one whenever the toolbar is tucked away. */
+function smallViewport() {
+  const probe = document.createElement("div");
+  probe.style.cssText = "position:fixed;top:0;height:100svh;visibility:hidden;pointer-events:none";
+  document.body.append(probe);
+  const height = probe.getBoundingClientRect().height || window.innerHeight;
+  probe.remove();
+  return height;
+}
+
 /** Where the project page's laptop will sit, so the dive can aim for it before that page exists. */
 function stageLaptop() {
   const vw = window.innerWidth;
-  const vh = Math.max(window.innerHeight, 520);
+  const vh = Math.max(smallViewport(), 520);
   const narrow = vw < 760;
-  return { x: vw / 2, y: vh * (narrow ? 0.42 : 0.47), w: narrow ? vw * 0.92 : Math.min(vw * 0.58, vh * 1.04, 1120) };
+  // Must match --lw and .stage-device in site.css, or the dive aims at the wrong
+  // laptop and the handover snaps.
+  return {
+    x: vw / 2,
+    y: vh * (narrow ? 0.42 : 0.47),
+    w: narrow ? vw * 0.92 : Math.min(vw * 0.66, vh * 1.12, 1280),
+  };
 }
 
 /** A copy of the project card grows into the whole screen while the project page loads behind it. */
@@ -92,7 +89,8 @@ function startDive(source: HTMLElement): Dive {
   const tilt = room.querySelector<HTMLElement>(".showcase-tilt");
   if (device) {
     const d = device.getBoundingClientRect();
-    set({ "--dx": d.left + d.width / 2 - box.left, "--dy": d.top + d.height / 2 - box.top, "--dw": device.offsetWidth });
+    // The measured width, not the layout one: a card in the rail may be scaled back.
+    set({ "--dx": d.left + d.width / 2 - box.left, "--dy": d.top + d.height / 2 - box.top, "--dw": d.width });
     const liveTilt = device.querySelector<HTMLElement>(".showcase-tilt");
     if (tilt && liveTilt) tilt.style.transform = getComputedStyle(liveTilt).transform;
   }
@@ -247,17 +245,21 @@ export function PageTransition() {
   }, [phase]);
 
   return (
-    <div className={"curtain is-" + phase} aria-hidden="true">
-      <div className="curtain-panel">
-        <Sun className="curtain-sun" />
-        <span className="curtain-label" key={label}>
-          {Array.from(label).map((char, i) => (
-            <span key={i} style={{ "--ci": i } as CSSProperties}>
-              {char === " " ? "\u00a0" : char}
-            </span>
-          ))}
-        </span>
-      </div>
+    <div className={"veil is-" + phase} aria-hidden="true">
+      <span className="veil-warm" />
+      <span className="veil-sheet" />
+      <span className="veil-card" key={label}>
+        <Sun className="veil-sun" />
+        {label && (
+          <span className="veil-name">
+            {Array.from(label).map((char, i) => (
+              <span key={i} style={{ "--ci": i } as CSSProperties}>
+                {char === " " ? "\u00a0" : char}
+              </span>
+            ))}
+          </span>
+        )}
+      </span>
     </div>
   );
 }

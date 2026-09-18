@@ -4,25 +4,30 @@ import { copy, isVideo, pad, type Locale } from "@/lib/content";
 import { videoProps } from "@/lib/media";
 import { clamp, easeInOut, easeOut, span } from "@/lib/scene";
 import { Arrow } from "./icon";
-import { Laptop, OpeningLaptop, screenSource, useFits } from "./laptop";
+import { OpeningLaptop, screenSource, useFits } from "./laptop";
 
 const FADE = 0.14;
 
 /**
- * The scene plays by itself as soon as the page opens: the lights go down, the laptop
- * rises and opens, the display wakes and the mirrors unfold. Scrolling then moves
- * through the screens. Arriving from a project card (a "dive"), the laptop is already
- * open under the transition, so only the mirrors unfold.
+ * The scene plays by itself as soon as the page opens: the lights go down, the
+ * laptop rises and opens and the display wakes. Scrolling then moves through the
+ * screens. Nothing else is in the room — the light, the laptop and its
+ * reflection on the floor.
+ *
+ * Arriving from a project card (a "dive") the laptop is already open and lit, so
+ * that scene would be a lie. Instead the room itself arrives around it (`land`):
+ * the beam comes down, the pool of light and the reflection gather on the floor,
+ * the name writes itself in. The laptop does not move at all — the copy that
+ * flew in and the real one must be the same picture, or landing jumps.
  */
-function introAt(t: number, arrival: string | undefined, wing: number) {
-  if (arrival === "dive") return { dim: 1, rise: 1, lid: 1, power: 1, wing };
-  const power = span(t, 1.75, 2.35);
+function introAt(t: number, arrival: string | undefined, land: number) {
+  if (arrival === "dive") return { dim: 1, rise: 1, lid: 1, power: 1, land };
   return {
     dim: arrival === "curtain" ? 1 : easeInOut(span(t, 0, 1.1)),
     rise: easeOut(span(t, 0.15, 1.7)),
     lid: easeInOut(span(t, 0.6, 1.95)),
-    power,
-    wing: easeOut(span(t, 2, 3.4)),
+    power: span(t, 1.75, 2.35),
+    land: 1,
   };
 }
 
@@ -44,7 +49,6 @@ export function MirrorStage({
   const root = useRef<HTMLElement>(null);
   const videos = useRef<(HTMLVideoElement | null)[]>([]);
   const images = useRef<(HTMLImageElement | null)[]>([]);
-  const dust = useRef<HTMLCanvasElement>(null);
   const chosen = useRef(0);
   const paused = useRef(false);
   const [active, setActive] = useState(0);
@@ -96,10 +100,11 @@ export function MirrorStage({
     const landed = arrival === "landed";
     const mode = landed ? undefined : arrival;
     let startAt = mode ? Infinity : performance.now() + (landed ? 0 : 250);
-    let wingAt = Infinity;
+    let landAt = Infinity;
     const arrive = () => {
       const now = performance.now();
-      if (mode === "dive") wingAt = Math.min(wingAt, now);
+      // The dive has handed the laptop over: bring the room up around it.
+      if (mode === "dive") landAt = Math.min(landAt, now);
       // The curtain is already lifting: begin half a second into the scene.
       else startAt = Math.min(startAt, now - 450);
     };
@@ -109,46 +114,6 @@ export function MirrorStage({
     let current = -1;
     let frame = 0;
     let visible = false;
-    // Motes of dust drifting through the beam above the laptop.
-    const motes = Array.from({ length: 90 }, () => ({
-      x: Math.random(),
-      y: Math.random(),
-      z: 0.2 + Math.random() * 0.8,
-      phase: Math.random() * Math.PI * 2,
-      speed: 0.004 + Math.random() * 0.012,
-    }));
-    const drawDust = (light: number) => {
-      const surface = dust.current;
-      const ctx = surface?.getContext("2d");
-      if (!surface || !ctx) return;
-      const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
-      const w = Math.round(surface.clientWidth * dpr);
-      const h = Math.round(surface.clientHeight * dpr);
-      if (surface.width !== w || surface.height !== h) {
-        surface.width = w;
-        surface.height = h;
-      }
-      ctx.clearRect(0, 0, w, h);
-      if (light < 0.2 || reduced.matches) return;
-      const now = performance.now() / 1000;
-      ctx.globalCompositeOperation = "lighter";
-      for (const mote of motes) {
-        mote.y -= mote.speed / 60;
-        if (mote.y < -0.05) {
-          mote.y = 1.05;
-          mote.x = Math.random();
-        }
-        const x = (mote.x + Math.sin(now * 0.3 + mote.phase) * 0.012) * w;
-        const y = mote.y * h;
-        const beam = Math.max(0, 1 - Math.abs(mote.x - 0.5) / (0.18 + mote.y * 0.32));
-        const alpha = (0.08 + beam * 0.55) * mote.z * clamp((light - 0.2) / 0.5) * (0.7 + 0.3 * Math.sin(now * 1.7 + mote.phase));
-        if (alpha < 0.01) continue;
-        ctx.fillStyle = `rgba(255, 236, 205, ${alpha.toFixed(3)})`;
-        ctx.beginPath();
-        ctx.arc(x, y, (0.5 + mote.z * 1.6) * dpr, 0, Math.PI * 2);
-        ctx.fill();
-      }
-    };
     const write = (name: string, value: number) => {
       const v = value.toFixed(4);
       if (written.get(name) === v) return;
@@ -168,17 +133,20 @@ export function MirrorStage({
       if (Math.abs(g.q - q) < 0.0005) q = g.q;
       const now = performance.now();
       const scene = reduced.matches
-        ? { dim: 1, rise: 1, lid: 1, power: 1, wing: 1 }
-        : introAt((now - startAt) / 1000, mode, easeOut(span((now - wingAt) / 1000, 0, 1.4)));
+        ? { dim: 1, rise: 1, lid: 1, power: 1, land: 1 }
+        : introAt(
+            (now - startAt) / 1000,
+            mode,
+            easeOut(span((now - landAt) / 1000, 0, 1.15)),
+          );
       write("--a", scene.dim);
       write("--rise", scene.rise);
       write("--lid", scene.lid);
       write("--power", scene.power);
       // The display wakes with a warm flash.
       write("--flash", scene.power * (1 - scene.power) * 4);
-      write("--wing", scene.wing);
+      write("--land", scene.land);
       write("--p", g.p);
-      drawDust(scene.power);
       let best = 0;
       for (let i = 0; i < count; i++) {
         const fadeIn = i === 0 ? 1 : clamp((q - (i - FADE)) / (2 * FADE));
@@ -316,14 +284,6 @@ export function MirrorStage({
       </div>
     ));
 
-  const reflection = (
-    <div className="mirror-inner">
-      <Laptop className="mirror-laptop is-ghost">{screens(false)}</Laptop>
-      <Laptop className="mirror-laptop">{screens(false)}</Laptop>
-      <span className="mirror-sheen" />
-    </div>
-  );
-
   return (
     <section
       ref={root}
@@ -338,17 +298,10 @@ export function MirrorStage({
         <div className="stage-glow" aria-hidden="true">
           {screens(false)}
         </div>
-        <canvas ref={dust} className="stage-dust" aria-hidden="true" />
         <div className="stage-room">
-          <div className="mirror mirror-left" aria-hidden="true">
-            {reflection}
-          </div>
           <div className="stage-device">
             <OpeningLaptop>{screens(true)}</OpeningLaptop>
             <span className="stage-floor" aria-hidden="true" />
-          </div>
-          <div className="mirror mirror-right" aria-hidden="true">
-            {reflection}
           </div>
         </div>
         <div className="stage-ui">
