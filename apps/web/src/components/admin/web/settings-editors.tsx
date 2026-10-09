@@ -46,15 +46,15 @@ export function HomeEditor({ settings }: { settings: Settings }) {
               rows={2}
               value={s.heroTitle}
               onChange={(v) => set("heroTitle", v)}
-              hint="Pulsa Enter para partirla en dos líneas. La última línea aparece en cursiva y en color caramelo."
+              hint="Pulsa Enter para partirla en dos líneas. La última aparece en cursiva caramelo. Te acompaña en el centro durante todo el vuelo 3D y al final sus palabras vuelan hacia ti."
             />
             <BiField
-              label="Frases que flotan en el vuelo"
+              label="Descripción corta"
               lang={lang}
-              rows={3}
+              rows={2}
               value={s.heroDescription}
               onChange={(v) => set("heroDescription", v)}
-              hint="Aparecen en 3D entre tus proyectos mientras se baja, una tras otra. Una frase por línea (Enter), hasta 3. Déjalo vacío si no quieres ninguna."
+              hint="Aparece en tu página de enlaces (Links). La portada solo muestra la frase grande."
             />
             <p className="kit-note">
               Las fotos que flotan son las de tus <b>trabajos destacados</b> (portada y galería de cada uno). Las capturas

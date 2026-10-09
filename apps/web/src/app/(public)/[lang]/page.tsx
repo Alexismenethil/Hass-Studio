@@ -2,7 +2,7 @@ import Link from "next/link";
 import { pageMetadata } from "@/lib/server/metadata";
 import { getContent } from "@/lib/server/content";
 import { shapesOf } from "@/lib/server/shape";
-import { text, copy, isVideo, lines, pad, workCover, workMedia, type Locale, type Work } from "@/lib/content";
+import { text, copy, isVideo, pad, workCover, workMedia, type Locale, type Work } from "@/lib/content";
 import { Arrow } from "@/components/icon";
 import { Media } from "@/components/media";
 import { Words } from "@/components/text";
@@ -70,7 +70,6 @@ export default async function Home({ params }: { params: Promise<{ lang: Locale 
       <HeroFlight
         cards={cards}
         title={text(s.heroTitle, lang)}
-        lines={lines(text(s.heroDescription, lang)).slice(0, 3)}
         locale={lang}
       />
 

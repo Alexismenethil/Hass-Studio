@@ -1,9 +1,8 @@
 "use client";
 import Link from "next/link";
-import { useEffect, useRef, type CSSProperties } from "react";
+import { Fragment, useEffect, useRef, type CSSProperties } from "react";
 import { Arrow } from "./icon";
-import { Chars } from "./text";
-import { copy, type Locale } from "@/lib/content";
+import { copy, lines, type Locale } from "@/lib/content";
 import { sizedSource } from "@/lib/media";
 
 export type FlightCard = {
@@ -21,45 +20,65 @@ export type FlightCard = {
  * and leaves (fades) just before it would reach the lens at `gone`. Phones get
  * a shorter hall and a closer lens. Kept in step with .flight in site.css.
  */
-const DESK = { lens: 1000, travel: 4200, near: -200, step: 320, far: -2600, gone: 560 };
-const PHONE = { lens: 760, travel: 3600, near: -160, step: 300, far: -2400, gone: 430 };
-/** Words are read closer to the lens than pictures are seen. */
-const WORDS = { desk: { far: -1100, gone: 350 }, phone: { far: -950, gone: 280 } };
+const DESK = { lens: 1000, travel: 4200, near: -150, ring: 150, step: 330, far: -2600, gone: 560 };
+const PHONE = { lens: 760, travel: 3600, near: -120, ring: 130, step: 300, far: -2400, gone: 430 };
 const GOLDEN = 137.508;
-/** Pictures this deep arrive after the title has gone, so they may fly closer to the middle… */
-const OPEN = 6;
-/** …unless a line of words is hung near them: then they keep to the walls. */
-const CLEAR = 700;
+/**
+ * The first pictures stand close, in a ring around the title — as SubeYA's do —
+ * at these places on the screen (vw, vh from the middle). The rest hang deeper
+ * down the hall and arrive as you fly.
+ */
+const RING = [
+  { d: [-34, -21], m: [-20, -30] },
+  { d: [33, 19], m: [22, 29] },
+  { d: [-31, 25], m: [20, -35] },
+  { d: [31, -25], m: [-22, 33] },
+  { d: [-7, -34], m: [-24, 19] },
+  { d: [15, 33], m: [26, 40] },
+];
+/** Pictures this deep arrive once the flight is under way, so they may pass closer behind the title. */
+const OPEN = 9;
 
 type Geometry = typeof DESK;
 
+const depth = (g: Geometry, i: number) =>
+  i < RING.length
+    ? g.near - i * g.ring
+    : g.near - (RING.length - 1) * g.ring - (i - RING.length + 1) * g.step;
+/** How much bigger than seen something at `z` must be to look that size from the lens. */
+const unscale = (g: Geometry, z: number) => (g.lens - z) / g.lens;
+
 /** The share of the camera's travel during which something at `z` is on show. */
-const shown = (g: Geometry, z: number, far = g.far, gone = g.gone) => [
-  (((far - z) / g.travel) * 100).toFixed(2) + "%",
-  (((gone - z) / g.travel) * 100).toFixed(2) + "%",
+const shown = (g: Geometry, z: number) => [
+  (((g.far - z) / g.travel) * 100).toFixed(2) + "%",
+  (((g.gone - z) / g.travel) * 100).toFixed(2) + "%",
 ];
 
-function place(i: number, tall: boolean, words: number[]) {
-  const z = DESK.near - i * DESK.step;
-  const open = i >= OPEN && words.every((w) => Math.abs(w - z) > CLEAR);
+function place(i: number, tall: boolean) {
+  const open = i >= OPEN;
+  const ring = RING[i];
   const angle = ((i * GOLDEN + 24) * Math.PI) / 180;
   const cos = Math.cos(angle);
   const sin = Math.sin(angle);
+  const dz = depth(DESK, i);
+  const mz = depth(PHONE, i);
   const d = {
-    x: cos * (open ? 23 + (i % 3) * 4 : 31 + (i % 3) * 4.5),
-    y: sin * (open ? 17 + (i % 2) * 8 : 25 + (i % 2) * 8),
-    z,
-    w: tall ? [8.4, 9.6][i % 2] : [19, 16.5, 22][i % 3],
+    x: ring ? ring.d[0] * unscale(DESK, dz) : cos * (open ? 25 + (i % 3) * 4 : 31 + (i % 3) * 4.5),
+    y: ring ? ring.d[1] * unscale(DESK, dz) : sin * (open ? 19 + (i % 2) * 8 : 25 + (i % 2) * 8),
+    z: dz,
+    w: tall ? [8.6, 9.6][i % 2] : [18, 16, 20.5][i % 3],
   };
-  // A phone has no room either side of the title: its first pictures hang above
-  // and below it, never level with the words.
+  // A phone has no room either side of the title: its pictures hang above and
+  // below it, never level with the words.
   const tilt = (((i * 53) % 70) - 35) * (Math.PI / 180);
   const up = i % 2 ? 1 : -1;
   const m = {
-    x: Math.sin(tilt) * (open ? 30 : 34),
-    y: up * Math.cos(tilt) * (open ? 21 + (i % 3) * 4 : 36 + (i % 3) * 3),
-    z: PHONE.near - i * PHONE.step,
-    w: tall ? [24, 28][i % 2] : [50, 44, 56][i % 3],
+    x: ring ? ring.m[0] * unscale(PHONE, mz) : Math.sin(tilt) * (open ? 30 : 34),
+    y: ring
+      ? ring.m[1] * unscale(PHONE, mz)
+      : up * Math.cos(tilt) * (open ? 25 + (i % 3) * 4 : 36 + (i % 3) * 3),
+    z: mz,
+    w: tall ? [24, 27][i % 2] : [46, 42, 50][i % 3],
   };
   const [f0, f1] = shown(DESK, d.z);
   const [mf0, mf1] = shown(PHONE, m.z);
@@ -75,6 +94,8 @@ function place(i: number, tall: boolean, words: number[]) {
     // The walls of the hall lean in towards the middle, a little.
     "--ry": (-d.x * 0.32).toFixed(2) + "deg",
     "--rz": (((i * 37) % 9) - 4).toFixed(1) + "deg",
+    // How far the card turns while it is dealt out from behind the title.
+    "--dr": ((i % 2 ? 1 : -1) * (12 + (i % 3) * 7)).toFixed(0) + "deg",
     "--f0": f0,
     "--f1": f1,
     "--mf0": mf0,
@@ -83,66 +104,95 @@ function place(i: number, tall: boolean, words: number[]) {
   } as CSSProperties;
 }
 
-/** Where a line read at `at` of the flight hangs. */
-const depthOf = (at: number) => Math.round(-150 - at * DESK.travel);
-
-/** A line of words hung in the hall so that it is closest to you at `at` of the flight. */
-function hang(at: number, k: number) {
-  const z = depthOf(at);
-  const mz = Math.round(-120 - at * PHONE.travel);
-  const [f0, f1] = shown(DESK, z, WORDS.desk.far, WORDS.desk.gone);
-  const [mf0, mf1] = shown(PHONE, mz, WORDS.phone.far, WORDS.phone.gone);
-  return {
-    "--z": z + "px",
-    "--mz": mz + "px",
-    "--py": (k % 2 ? 7 : -6) + "vh",
-    "--f0": f0,
-    "--f1": f1,
-    "--mf0": mf0,
-    "--mf1": mf1,
-  } as CSSProperties;
+/**
+ * The title, word by word. Each word rises out of its own mask when the page
+ * opens, and at the end of the flight flies off towards the camera, away from
+ * the middle (--ex, --ey), one after another.
+ */
+function TitleWords({ text }: { text: string }) {
+  const rows = lines(text);
+  const total = rows.join(" ").split(" ").filter(Boolean).length || 1;
+  let n = 0;
+  return (
+    <>
+      {rows.map((row, l) => {
+        const words = row.split(" ").filter(Boolean);
+        return (
+          <span key={l} className={"tl" + (rows.length > 1 && l === rows.length - 1 ? " italic" : "")}>
+            {words.map((word, w) => {
+              const i = n++;
+              const ex = ((w + 0.5) / words.length - 0.5) * 80;
+              const ey = (l - (rows.length - 1) / 2) * 38;
+              return (
+                <Fragment key={w}>
+                  <span
+                    className="tw"
+                    style={
+                      {
+                        "--wi": i,
+                        "--wn": total,
+                        "--ex": ex.toFixed(1) + "vw",
+                        "--ey": ey.toFixed(1) + "vh",
+                      } as CSSProperties
+                    }
+                  >
+                    <span className="tw-in">{word}</span>
+                  </span>
+                  {w < words.length - 1 && " "}
+                </Fragment>
+              );
+            })}
+          </span>
+        );
+      })}
+    </>
+  );
 }
 
 /**
- * The opening: a title in a cream morning, and the studio's real work hanging
- * in the space around it. Scrolling flies the camera through the pictures —
- * they come out of the haze behind the title, grow and pass either side — and
- * through a few words hung in the air, while the light turns amber and goes
- * down to the espresso night the work is shown in.
+ * The opening, an inward version of SubeYA's "Ya están en la app": the title
+ * stays in the middle of the screen the whole way, and the studio's real work
+ * flies past it into the screen instead of down it.
  *
- * All of it is CSS: the camera is one transform on a scroll-driven timeline,
- * so the browser flies it on the compositor and a phone keeps up. Script only
- * leans the hall towards a mouse.
+ * It opens with the title's words rising out of their masks and the pictures
+ * dealt out from behind it like cards, each turning and growing into its place
+ * in the hall. Scrolling flies the camera through them while the light turns
+ * amber and goes down to the espresso night (the title turns from ink to cream
+ * with it). It ends with the words flying off past you and a warm light opening
+ * at the far end of the hall, onto the work.
+ *
+ * All of the scroll-linked motion is CSS on the section's view timeline, so the
+ * browser runs it on the compositor and a phone keeps up. Script only starts
+ * the opening and leans the hall towards a mouse.
  */
 export function HeroFlight({
   cards,
   title,
-  lines,
   locale,
 }: {
   cards: FlightCard[];
   title: string;
-  lines: string[];
   locale: Locale;
 }) {
   const t = copy[locale];
   const root = useRef<HTMLElement>(null);
   const tilt = useRef<HTMLDivElement>(null);
   const words = useRef<HTMLDivElement>(null);
-  // Where along the flight each line is read: spread over the amber and the night.
-  const stops = lines.length === 1 ? [0.64] : lines.map((_, k) => 0.54 + (k * 0.32) / (lines.length - 1));
 
   useEffect(() => {
     const el = root.current;
     const hall = tilt.current;
-    const title = words.current;
-    if (!el || !hall || !title) return;
-    const begin = window.setTimeout(() => el.classList.add("is-in"), 60);
+    const lean = words.current;
+    if (!el || !hall || !lean) return;
+    // Two frames, so the browser has painted the starting positions to deal from.
+    let start = requestAnimationFrame(() => {
+      start = requestAnimationFrame(() => el.classList.add("is-in"));
+    });
     if (
       !window.matchMedia("(pointer: fine)").matches ||
       window.matchMedia("(prefers-reduced-motion: reduce)").matches
     )
-      return () => window.clearTimeout(begin);
+      return () => cancelAnimationFrame(start);
     let frame = 0;
     let px = 0;
     let py = 0;
@@ -154,12 +204,12 @@ export function HeroFlight({
           frame = 0;
           hall.style.transform = `rotateX(${(-py * 4).toFixed(2)}deg) rotateY(${(px * 6).toFixed(2)}deg)`;
           // The title leans the other way, a little: it stands nearer than the hall.
-          title.style.transform = `perspective(1400px) rotateX(${(py * 2.4).toFixed(2)}deg) rotateY(${(-px * 3.2).toFixed(2)}deg)`;
+          lean.style.transform = `perspective(1400px) rotateX(${(py * 2.4).toFixed(2)}deg) rotateY(${(-px * 3.2).toFixed(2)}deg)`;
         });
     };
     el.addEventListener("pointermove", move, { passive: true });
     return () => {
-      window.clearTimeout(begin);
+      cancelAnimationFrame(start);
       cancelAnimationFrame(frame);
       el.removeEventListener("pointermove", move);
     };
@@ -176,6 +226,7 @@ export function HeroFlight({
       <div className="flight-sticky">
         <div className="flight-dusk" aria-hidden="true" />
         <div className="flight-sunset" aria-hidden="true" />
+        <div className="flight-bloom" aria-hidden="true" />
         <div className="flight-space" aria-hidden="true">
           <div className="flight-drift">
             <div ref={tilt} className="flight-tilt">
@@ -186,7 +237,7 @@ export function HeroFlight({
                       key={card.src + i}
                       href={card.href}
                       className={"flight-card" + (card.tall ? " is-tall" : "")}
-                      style={place(i, card.tall, stops.map(depthOf))}
+                      style={place(i, card.tall)}
                       tabIndex={-1}
                       data-cursor={t.view}
                     >
@@ -208,22 +259,25 @@ export function HeroFlight({
                       </span>
                     </Link>
                   ))}
-                  {lines.map((line, k) => (
-                    <p key={k} className="flight-phrase" style={hang(stops[k], k)}>
-                      {line}
-                    </p>
-                  ))}
                 </div>
               </div>
             </div>
           </div>
         </div>
         <div className="flight-mist" aria-hidden="true" />
+        <div className="flight-mist is-night" aria-hidden="true" />
         <div className="flight-copy">
           <div ref={words} className="flight-copy-in">
-            <h1 className="flight-title" data-chars>
-              <Chars text={title} italicLast />
+            <h1 className="flight-title">
+              <span className="sr-only">{title.replace(/\n/g, " ")}</span>
+              <span aria-hidden="true">
+                <TitleWords text={title} />
+              </span>
             </h1>
+            {/* The same words in cream, for when the night has come. */}
+            <div className="flight-title is-night" aria-hidden="true">
+              <TitleWords text={title} />
+            </div>
           </div>
         </div>
         <a className="flight-go" href="#work">
@@ -235,7 +289,6 @@ export function HeroFlight({
       </div>
       {/* Where the light has gone down: the header turns light over it. */}
       <div className="flight-night" data-header="dark" aria-hidden="true" />
-      {lines.length > 0 && <p className="sr-only">{lines.join(" ")}</p>}
     </section>
   );
 }
