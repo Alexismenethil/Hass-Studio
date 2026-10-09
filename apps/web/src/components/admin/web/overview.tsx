@@ -21,7 +21,7 @@ export function WebOverview({
     {
       href: "/web/servicios",
       title: "Servicios y trabajos",
-      text: "El carrusel de la portada y tus proyectos reales, con sus fotos y vídeos.",
+      text: "Tus servicios y tus proyectos reales, con sus fotos y vídeos.",
       media: (
         <span className="mosaic">
           {covers.map((src, i) => (
@@ -36,7 +36,7 @@ export function WebOverview({
     {
       href: "/web/inicio",
       title: "Página de inicio",
-      text: "La portada con tu imagen y tu frase, y el texto que va después del carrusel.",
+      text: "Tu frase de portada, el título de proyectos y el texto del estudio.",
       media: <Thumb src={settings.heroImage} />,
       action: "Editar portada",
     },

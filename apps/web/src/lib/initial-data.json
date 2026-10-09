@@ -149,88 +149,139 @@
   "works": [
     {
       "id": "11111111-1111-4111-8111-111111111111",
-      "slug": "casa-oliva",
-      "title": "Casa Oliva",
+      "slug": "golden-pearl",
+      "title": "Golden Pearl",
       "category_id": "websites",
       "year": 2026,
-      "cover": "/images/courtyard.webp",
-      "video": "",
-      "url": "",
+      "cover": "https://res.cloudinary.com/dcifl4uyj/image/upload/v1791562225/hass-golden-pearl-web-01.jpg",
+      "video": "https://res.cloudinary.com/dcifl4uyj/video/upload/v1791562224/hass-golden-pearl-recorrido.mp4",
+      "url": "https://golden-pearl.onrender.com",
       "description": {
-        "en": "An exploration of quiet hospitality. An editorial website concept inspired by natural materials, soft light and a slower pace.",
-        "es": "Una exploración de la hospitalidad serena. Un concepto web editorial inspirado en materiales naturales, luz suave y un ritmo pausado."
+        "es": "Sitio bilingüe y panel propio para una empresa de limpieza residencial: fotografía cálida, servicios contados como capítulos y una cotización guiada en pocos pasos.",
+        "en": "A bilingual website and in-house panel for a residential cleaning company: warm photography, services told as chapters and a guided quote in a few steps."
       },
       "challenge": {
-        "en": "Translate the atmosphere of a place into a digital experience that invites you to stay.",
-        "es": "Traducir la atmósfera de un lugar a una experiencia digital que invite a quedarse."
+        "es": "Una marca de limpieza que debía sentirse cercana y de confianza, no como un catálogo. Y una dueña que necesitaba editar servicios y textos sin depender de nadie.",
+        "en": "A cleaning brand that had to feel close and trustworthy, not like a catalogue — and an owner who needed to edit services and copy on her own."
       },
       "approach": {
-        "en": "Generous typography, tactile imagery and a considered visual rhythm. A study in how little an interface needs to say when the composition speaks.",
-        "es": "Tipografía amplia, imágenes con textura y un ritmo visual cuidado. Un estudio de lo poco que necesita decir una interfaz cuando la composición comunica."
+        "es": "Dirección de arte cálida, tipografía editorial y un recorrido por los servicios ligado al scroll. Por detrás, un panel con acceso seguro de doble factor, borradores, historial y publicación en dos idiomas.",
+        "en": "Warm art direction, editorial type and a scroll-driven tour of the services. Behind it, a panel with two-factor sign-in, drafts, history and bilingual publishing."
       },
-      "services": ["Art direction", "UI/UX design", "Creative development"],
-      "gallery": ["/images/coast.webp", "/images/olive.webp"],
+      "services": [
+        "Art direction",
+        "Web design",
+        "Development",
+        "Content panel"
+      ],
+      "gallery": [
+        "https://res.cloudinary.com/dcifl4uyj/image/upload/v1791562225/hass-golden-pearl-web-01.jpg",
+        "https://res.cloudinary.com/dcifl4uyj/image/upload/v1791562226/hass-golden-pearl-web-02.jpg",
+        "https://res.cloudinary.com/dcifl4uyj/image/upload/v1791562227/hass-golden-pearl-web-03.jpg",
+        "https://res.cloudinary.com/dcifl4uyj/image/upload/v1791562227/hass-golden-pearl-web-04.jpg",
+        "https://res.cloudinary.com/dcifl4uyj/image/upload/v1791562228/hass-golden-pearl-web-05.jpg",
+        "https://res.cloudinary.com/dcifl4uyj/image/upload/v1791562229/hass-golden-pearl-web-06.jpg",
+        "https://res.cloudinary.com/dcifl4uyj/image/upload/v1791562230/hass-golden-pearl-web-07.jpg",
+        "https://res.cloudinary.com/dcifl4uyj/image/upload/v1791562231/hass-golden-pearl-web-08.jpg",
+        "https://res.cloudinary.com/dcifl4uyj/image/upload/v1791562222/hass-golden-pearl-movil-01.jpg",
+        "https://res.cloudinary.com/dcifl4uyj/image/upload/v1791562223/hass-golden-pearl-movil-02.jpg"
+      ],
       "featured": true,
       "published": true,
-      "concept": true,
+      "concept": false,
       "kind": "website",
       "sort_order": 0
     },
     {
-      "id": "22222222-2222-4222-8222-222222222222",
-      "slug": "forma",
-      "title": "Forma",
-      "category_id": "systems",
+      "id": "81830a72-ea81-4027-ba22-fe9924e6ab99",
+      "slug": "ffc-siding-solutions",
+      "title": "FFC Siding Solutions",
+      "category_id": "websites",
       "year": 2026,
-      "cover": "/images/olive.webp",
-      "video": "",
-      "url": "",
+      "cover": "https://res.cloudinary.com/dcifl4uyj/image/upload/v1791562216/hass-ffc-siding-web-01.jpg",
+      "video": "https://res.cloudinary.com/dcifl4uyj/video/upload/v1791562215/hass-ffc-siding-recorrido.mp4",
+      "url": "https://ffcsidingsolutions.com",
       "description": {
-        "en": "A visual study for a calmer workspace. Clear information, considered interactions and room to focus.",
-        "es": "Un estudio visual para trabajar con calma. Información clara, interacciones cuidadas y espacio para concentrarse."
+        "es": "Web bilingüe para una empresa familiar de revestimientos en Carolina del Norte: casas reales a pantalla completa, seis servicios contados como capítulos y contacto directo desde el teléfono.",
+        "en": "A bilingual website for a family siding company in North Carolina: real homes full-screen, six services told as chapters and direct contact from any phone."
       },
       "challenge": {
-        "en": "Give everyday work the same attention to design as a public-facing website.",
-        "es": "Dar al trabajo diario la misma atención de diseño que a una web pública."
+        "es": "Mostrar más de veinte años de oficio con fotos de obra reales, y que un propietario pudiera pedir presupuesto en segundos desde el móvil.",
+        "en": "Show more than twenty years of craft through real job-site photos, and let a homeowner ask for an estimate in seconds from a phone."
       },
       "approach": {
-        "en": "A restrained palette, precise hierarchy and a focused overview. Every element has a clear purpose.",
-        "es": "Una paleta contenida, jerarquía precisa y una vista general enfocada. Cada elemento tiene un propósito."
+        "es": "Tipografía ligera sobre fotografía de obra, movimiento nativo ligado al scroll y una barra de llamada, SMS y cotización siempre a mano. Contenido editable, imágenes en Cloudinary y rendimiento verificado en móviles.",
+        "en": "Light type over job-site photography, native scroll-linked motion and a call, text and estimate bar always at hand. Editable content, Cloudinary media and performance verified on phones."
       },
-      "services": ["Product design", "UI/UX", "Design systems"],
-      "gallery": ["/images/courtyard.webp"],
+      "services": [
+        "Web design",
+        "Development",
+        "Bilingual content",
+        "Performance"
+      ],
+      "gallery": [
+        "https://res.cloudinary.com/dcifl4uyj/image/upload/v1791562216/hass-ffc-siding-web-01.jpg",
+        "https://res.cloudinary.com/dcifl4uyj/image/upload/v1791562217/hass-ffc-siding-web-02.jpg",
+        "https://res.cloudinary.com/dcifl4uyj/image/upload/v1791562218/hass-ffc-siding-web-03.jpg",
+        "https://res.cloudinary.com/dcifl4uyj/image/upload/v1791562218/hass-ffc-siding-web-04.jpg",
+        "https://res.cloudinary.com/dcifl4uyj/image/upload/v1791562220/hass-ffc-siding-web-05.jpg",
+        "https://res.cloudinary.com/dcifl4uyj/image/upload/v1791562221/hass-ffc-siding-web-06.jpg",
+        "https://res.cloudinary.com/dcifl4uyj/image/upload/v1791562221/hass-ffc-siding-web-07.jpg",
+        "https://res.cloudinary.com/dcifl4uyj/image/upload/v1791562210/hass-ffc-siding-movil-01.jpg",
+        "https://res.cloudinary.com/dcifl4uyj/image/upload/v1791562210/hass-ffc-siding-movil-02.jpg",
+        "https://res.cloudinary.com/dcifl4uyj/image/upload/v1791562212/hass-ffc-siding-movil-03.jpg"
+      ],
       "featured": true,
       "published": true,
-      "concept": true,
-      "kind": "dashboard",
+      "concept": false,
+      "kind": "website",
       "sort_order": 1
     },
     {
-      "id": "33333333-3333-4333-8333-333333333333",
-      "slug": "savia",
-      "title": "Savia",
+      "id": "566471fc-ee4a-4957-8246-084c83f4eb1d",
+      "slug": "subeya",
+      "title": "SubeYA",
       "category_id": "mobile",
       "year": 2026,
-      "cover": "/images/coast.webp",
-      "video": "",
-      "url": "",
+      "cover": "https://res.cloudinary.com/dcifl4uyj/image/upload/v1791562239/hass-subeya-web-01.jpg",
+      "video": "https://res.cloudinary.com/dcifl4uyj/video/upload/v1791562237/hass-subeya-recorrido.mp4",
+      "url": "https://www.subeya.site",
       "description": {
-        "en": "A mobile interface study shaped by nature. A little space to pause, discover and reconnect.",
-        "es": "Un estudio de interfaz móvil inspirado en la naturaleza. Un espacio para pausar, descubrir y reconectar."
+        "es": "Una app para descubrir los lugares y negocios de Ayacucho y moverse por la ciudad: rutas en el mapa, reels, turismo y una web donde cada negocio publica el suyo.",
+        "en": "An app to discover the places and businesses of Ayacucho and move around the city: routes on the map, reels, tourism and a website where every business publishes its own."
       },
       "challenge": {
-        "en": "Bring a feeling of openness and calm into a compact mobile experience.",
-        "es": "Llevar una sensación de apertura y calma a una experiencia móvil compacta."
+        "es": "Reunir en una sola app lo que una ciudad recomienda de boca en boca —dónde comer, qué visitar, qué combi tomar— y que los negocios locales aparecieran sin intermediarios.",
+        "en": "Bring into one app what a city recommends by word of mouth — where to eat, what to see, which bus to take — and let local businesses appear without middlemen."
       },
       "approach": {
-        "en": "Immersive photography, accessible controls and simple navigation form a gentle everyday companion.",
-        "es": "Fotografía inmersiva, controles accesibles y navegación simple para una experiencia cotidiana amable."
+        "es": "App nativa para Android, con iOS en camino; una API en tiempo real con mapas y rutas; y una web pública donde cada negocio sube sus fotos, con un panel de aprobación detrás.",
+        "en": "A native Android app, with iOS on the way; a real-time API with maps and routes; and a public website where each business uploads its photos, with an approvals panel behind it."
       },
-      "services": ["Mobile design", "Interaction design"],
-      "gallery": ["/images/olive.webp"],
+      "services": [
+        "Product design",
+        "Mobile app",
+        "Web platform",
+        "Maps & routes"
+      ],
+      "gallery": [
+        "https://res.cloudinary.com/dcifl4uyj/image/upload/v1791562231/hass-subeya-app-01.jpg",
+        "https://res.cloudinary.com/dcifl4uyj/image/upload/v1791562232/hass-subeya-app-02.jpg",
+        "https://res.cloudinary.com/dcifl4uyj/image/upload/v1791562232/hass-subeya-app-03.jpg",
+        "https://res.cloudinary.com/dcifl4uyj/image/upload/v1791562233/hass-subeya-app-04.jpg",
+        "https://res.cloudinary.com/dcifl4uyj/image/upload/v1791562234/hass-subeya-app-05.jpg",
+        "https://res.cloudinary.com/dcifl4uyj/image/upload/v1791562234/hass-subeya-app-06.jpg",
+        "https://res.cloudinary.com/dcifl4uyj/image/upload/v1791562239/hass-subeya-web-01.jpg",
+        "https://res.cloudinary.com/dcifl4uyj/image/upload/v1791562239/hass-subeya-web-02.jpg",
+        "https://res.cloudinary.com/dcifl4uyj/image/upload/v1791562240/hass-subeya-web-03.jpg",
+        "https://res.cloudinary.com/dcifl4uyj/image/upload/v1791562241/hass-subeya-web-04.jpg",
+        "https://res.cloudinary.com/dcifl4uyj/image/upload/v1791562241/hass-subeya-web-05.jpg",
+        "https://res.cloudinary.com/dcifl4uyj/image/upload/v1791562235/hass-subeya-movil-01.jpg",
+        "https://res.cloudinary.com/dcifl4uyj/image/upload/v1791562236/hass-subeya-movil-02.jpg"
+      ],
       "featured": true,
       "published": true,
-      "concept": true,
+      "concept": false,
       "kind": "mobile",
       "sort_order": 2
     }

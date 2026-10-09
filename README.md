@@ -4,7 +4,7 @@ Alexis Huamani Rivera's bilingual design studio. A cinematic public portfolio an
 
 ## Published preview
 
-https://hass-studio.vercel.app — deployed to the HASS Studio project in the existing Vercel team. Supabase is connected to the live site: project `vgsywzswnxsbszrwfgwu`, with bilingual settings, three categories and three labeled design studies. The owner account has its ADMIN role activated; email delivery remains pending.
+https://hass-studio.vercel.app — deployed to the HASS Studio project in the existing Vercel team. Supabase is connected to the live site: project `vgsywzswnxsbszrwfgwu`, with bilingual settings, three categories and the real projects (Golden Pearl, FFC Siding Solutions, SubeYA). The owner account has its ADMIN role activated; email delivery remains pending.
 
 ## Local development
 
@@ -21,21 +21,23 @@ The running preview currently uses http://localhost:3001/en (port 3000 was occup
 
 ## What is included
 
-- Identity motifs: Mediterranean light, the arch, the twelve-ray sun and the sea horizon, over ivory, olive and night, with a fine film grain.
-- Home, in three scenes: a first-visit intro (the sun draws itself, an arch opens onto the hero); the hero photograph, which on a desktop carries a WebGL light of drifting leaf shadows and a warm spot under the pointer (phones get the same light in CSS, no shader), closing into an arch framed by the studio phrase and passing through it into the dark; then **the screening room**, which rises up out of that night at about half the scroll's speed, so the work is already in frame as the hero goes dark. An arch of the project's own light opens from the floor and the laptop stands up inside it: the lid opens, the display wakes with a warm flash, and the name arrives with it. There is nothing else in the room — no counter, no labels, no numbers — just the laptop, its light, its name and two very quiet arrows under the floor line. The work sits side by side on one endless rail of native scroll (three copies of the set, kept in the middle one, so there is always a room to either side and no end to reach); it plays by itself and stops as soon as the reader swipes, drags or steers. Last, a studio note, which arrives as a paper arch swelling up out of the dark, its words coming into focus one after another as they cross the middle of the screen.
-- Services moved off the home to their own page (`/[lang]/services`): the carousel where light burns through one service photograph into the next (WebGL on desktop, crossfading photographs on phones), with a 3D drum of giant titles, an arch of that service's work and chapter markers.
-- Service pages (`/[lang]/services/[id]`) open their photograph from an arch and list every published work in its own dark room. The work index (`/[lang]/work`) groups all work with a pointer-following preview.
-- Work pages (`/[lang]/work/[slug]`): short description, optional "Visit website" link, and a scroll-driven scene — an iris of light closes on a closed laptop, the lid opens in 3D, the display wakes with a warm flash and its reflection settles on the floor. Screens (photos or MP4/WebM) change with scroll; full-page captures travel inside the display, phone captures sit over a blurred copy.
-- Clicking a project on the home dives into it: a copy of the room grows to fill the screen and hands its laptop over to the project page, invisibly. Every other page change plays the veil — a band of warm light sweeps the page away, the night follows it and the destination is named on a title card. The footer is a sunset: the sun rises over the horizon with its reflection on the sea.
-- Scroll-linked motion (the screening room rising and opening, the arch that reveals every photograph, the drifts, each word of a paragraph coming into focus, the footer's sunset) runs as CSS scroll-driven animations, so the browser keeps it on the compositor and nothing moves layers from script while the page scrolls. Where a browser lacks them, each one simply rests in its finished state. Entrances are one IntersectionObserver plus CSS transitions; there is no animation library in the bundle.
-- Native scrolling throughout (sticky sections, short catch-up, no scroll hijacking), letter focus-pull reveals, magnetic buttons, and reduced-motion fallbacks (no intro, grain, veil or WebGL). Phones also skip the film grain and the hero's shader.
+- Identity: espresso and cream with one caramel light (tokens in `apps/web/src/styles/globals.css`), Instrument Serif for display and DM Sans for text. The arch stays as the shape that reveals photographs.
+- Home, in four scenes:
+  - **The flight.** Only the title, in a cream morning, while the real work — every page and phone screen of the featured projects — hangs in 3D space around it, and a quiet ring at the foot of the screen. Scrolling flies the camera (rolling a little) through the pictures: they come out of the haze behind the title, grow and pass either side, and the lines of the panel's «Frases que flotan en el vuelo» hang in the air to be read and passed through, while the light turns amber and goes down to espresso. Vertical captures are drawn as phones (their shape is read from Cloudinary once and cached). On a desktop the hall leans towards the mouse.
+  - **The work, in chapters.** One full-screen chapter per featured project, stacked like cards, with no labels or counters: the project's giant name, a laptop that stands up out of the dark and opens its lid in 3D, its display waking on the site's own scroll-through video, and a phone floating beside it with the mobile version. Below it, one line in the title's type says what it is, beside a ring to step inside. When the next chapter slides over, the previous one sinks into the dark. "Explore the project" dives: the laptop flies into the project page's own laptop without a jump.
+  - **The studio note**, written in as it is read: the paragraph starts as a watermark and a reading cursor tied to its scroll inks it word by word, each word glowing caramel for an instant; a photograph in an arch, and the services as large rows.
+  - **The footer**: the invitation, a caramel button, and the studio's name standing up out of the floor letter by letter.
+- Work pages (`/[lang]/work/[slug]`): the laptop scene plays the video and the first page screens; below it, the description, the challenge and the approach, the remaining pages in browser windows that tilt up as they arrive, and the phone screens on a native swipe rail. Every project leads to the next.
+- Work index (`/[lang]/work`): large staggered cards. Services (`/[lang]/services`) keep the cinematic carousel; service pages list their work in dark rooms. Studio, contact and links share the same palette.
+- All scroll-linked motion (the flight, the chapters, the word focus, the arch, the footer) is CSS scroll-driven animation on view timelines, so the browser runs it off the main thread; browsers without support show every scene in its finished state, and reduced motion turns it all off. Script only plays the video on screen and leans the hall towards a desktop mouse. Native scrolling throughout, no scroll hijacking, no animation library.
+- Real projects published: Golden Pearl, FFC Siding Solutions and SubeYA, with page captures, phone captures and a scroll-through video of each live site, hosted on Cloudinary (folder `hass-studio/proyectos`). The earlier design studies (Forma, Savia) are unpublished, not deleted.
 - Supabase-backed bilingual content, all editable from the panel.
 
 ## Editing the website (panel)
 
 `/admin` separates **Tu web** (public) from **Clientes** (private, never published):
 
-- **Página de inicio** — hero image/video, big phrase, short line, and the studio statement.
+- **Página de inicio** — the small line, big phrase and short line of the opening, the projects title, the studio note and its photograph, and the image used when the link is shared.
 - **Servicios y trabajos** — each service is one carousel slide. Open a service to edit its slide, reorder or publish/hide its works, or add a new one. A work has a title, service, year, optional link, short description, laptop screens (drag to upload several and reorder), optional thumbnail and optional case details.
 - **Estudio y contacto** — biography, portrait, email, WhatsApp, socials, footer invitation.
 - **Marca y SEO** — brand name, logo and search snippet.
@@ -77,7 +79,7 @@ Every photo field in the panel also accepts a video. With NEXT_PUBLIC_CLOUDINARY
 
 Supabase Storage still holds private client files (client-files bucket) and the fallback public uploads (public-media). Files larger than 6 MB use resumable upload. Limit: 50 MB per file; MP4/WebM, JPEG/PNG/WebP/AVIF, and PDF for client attachments.
 
-The current laptop frame is laptop-frontal.webp; laptop-navy.png is a discarded earlier art-direction variant retained only among originals. Generated originals: assets/originals. Optimized web files: apps/web/public/images. Prompt set and generation method: docs/IMAGE-PROMPTS.md. The sample interfaces are original design studies; replace them from Portfolio and disable Concepto / estudio visual for real screenshots.
+The current laptop frame is laptop-frontal.webp; laptop-navy.png is a discarded earlier art-direction variant retained only among originals. Generated originals: assets/originals. Optimized web files: apps/web/public/images. Prompt set and generation method: docs/IMAGE-PROMPTS.md. 
 
 ## Deployment
 

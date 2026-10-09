@@ -162,6 +162,20 @@ export function SiteNav({
             </Link>
           ))}
         </nav>
+        <div className="menu-foot">
+          <Link className="pill menu-cta" href={"/" + locale + "/contact"} onClick={() => dialog.current?.close()}>
+            {t.talk} <Arrow diagonal />
+          </Link>
+          <Link
+            className="language-switch"
+            href={path.replace(/^\/(en|es)/, "/" + other) + (search.size ? "?" + search.toString() : "")}
+            aria-label={other === "es" ? "Cambiar a español" : "Switch to English"}
+          >
+            <span className={locale === "en" ? "current" : ""}>EN</span>
+            <i>/</i>
+            <span className={locale === "es" ? "current" : ""}>ES</span>
+          </Link>
+        </div>
         <p>{settings.name}</p>
       </dialog>
     </>

@@ -45,9 +45,6 @@ export default async function ServicePage({ params }: { params: Params }) {
           <Link href={"/" + lang + "/services"} className="back-link">
             <Arrow className="arrow-left" /> {t.allServices}
           </Link>
-          <span className="eyebrow">
-            {t.service} {pad(index + 1)} / {pad(categories.length)}
-          </span>
         </div>
         <h1 className="display" data-chars>
           <Chars text={text(service.title, lang)} />

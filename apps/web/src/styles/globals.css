@@ -1,19 +1,30 @@
 @import "./site.css";
+@import "./scenes.css";
 @import "./admin.css";
+/*
+ * Espresso & cream. Warm black for the night scenes, a cream paper for the day
+ * ones, and one caramel light that belongs to neither: buttons, accents, the
+ * italic word in a title.
+ */
 :root {
-  --paper: #f3f0e8;
-  --paper-dark: #e8e4d9;
-  --ink: #262a22;
-  --ink-soft: #4a4f43;
-  --muted: #7a7b6f;
-  --accent: #626950;
-  --olive: #5f664c;
-  --night: #141612;
-  --line: rgba(38, 42, 34, 0.14);
-  --line-dark: rgba(243, 240, 232, 0.16);
-  --gutter: clamp(20px, 4.4vw, 76px);
+  --paper: #f2ebe1;
+  --paper-dark: #e6dccd;
+  --ink: #1b1511;
+  --ink-soft: #4b3d33;
+  --muted: #8a7a6c;
+  --accent: #a2683d;
+  --caramel: #c99668;
+  --olive: var(--accent);
+  --night: #0f0b09;
+  --espresso: #17110e;
+  --coffee: #2a1f19;
+  --line: rgba(27, 21, 17, 0.13);
+  --line-dark: rgba(242, 235, 225, 0.14);
+  --cream-soft: rgba(242, 235, 225, 0.62);
+  --gutter: clamp(18px, 4.4vw, 76px);
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-io: cubic-bezier(0.76, 0, 0.24, 1);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
 }
 * {
   box-sizing: border-box;
@@ -21,6 +32,7 @@
 html {
   scroll-behavior: smooth;
   scroll-padding-top: 90px;
+  background: var(--paper);
 }
 body {
   margin: 0;
@@ -29,10 +41,12 @@ body {
   font-family: var(--font-sans), sans-serif;
   font-size: 14px;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 ::selection {
-  background: #767d5e;
-  color: white;
+  background: var(--accent);
+  color: #fff;
 }
 button,
 input,
@@ -78,16 +92,19 @@ button:disabled {
   outline-offset: 6px;
 }
 p {
-  line-height: 1.85;
+  line-height: 1.75;
 }
 h1,
 h2 {
   font-family: var(--font-serif), Georgia, serif;
-  letter-spacing: -0.045em;
-  line-height: 0.98;
+  letter-spacing: -0.035em;
+  line-height: 0.95;
 }
 h2 {
-  font-size: clamp(45px, 5.2vw, 82px);
+  font-size: clamp(44px, 5.4vw, 88px);
+}
+em {
+  font-style: italic;
 }
 svg {
   flex-shrink: 0;
@@ -100,28 +117,28 @@ button {
   font-style: italic;
 }
 .eyebrow {
-  font-size: 10px;
-  letter-spacing: 0.16em;
+  font-size: 10.5px;
+  letter-spacing: 0.18em;
   line-height: 1.8;
   text-transform: uppercase;
 }
 .muted {
   color: var(--muted);
 }
-.section-pad {
-  padding: 115px 6.25vw;
-}
 .text-link {
   display: inline-flex;
-  gap: 28px;
+  gap: 22px;
   align-items: center;
-  font-size: 12px;
+  font-size: 13px;
   padding: 14px 0;
-  border-bottom: 1px solid var(--line);
-  transition: gap 0.4s var(--ease);
+  border-bottom: 1px solid currentColor;
+  transition: gap 0.5s var(--ease);
+}
+.text-link svg {
+  width: 16px;
 }
 .text-link:hover {
-  gap: 42px;
+  gap: 36px;
 }
 .sr-only {
   position: absolute;

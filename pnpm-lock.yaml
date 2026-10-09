@@ -17,7 +17,7 @@ importers:
       '@fontsource-variable/dm-sans':
         specifier: ^5.3.0
         version: 5.3.0
-      '@fontsource/cormorant-garamond':
+      '@fontsource/instrument-serif':
         specifier: ^5.3.0
         version: 5.3.0
       '@hass/branding':
@@ -266,8 +266,8 @@ packages:
   '@fontsource-variable/dm-sans@5.3.0':
     resolution: {integrity: sha512-BpUG5bqePiDFMBM4ZtLSlPdAIOM990uB1dlXzIf4aw21yQR7BmykedLXXXMqGWsR18aMLOsbWccwJNh3ztTQaA==}
 
-  '@fontsource/cormorant-garamond@5.3.0':
-    resolution: {integrity: sha512-weuGsCirGVWBWqpt6YUp0yLThTe4G8YO45noq8wxeJCRvEpq5lFrxNMFSTxcyOyV5k5otzJ8guDzYegdYlcLMQ==}
+  '@fontsource/instrument-serif@5.3.0':
+    resolution: {integrity: sha512-mDiaIg0u67sYV59fie92Wz4sM8UiVlbL7fLxnFPCKkX15DMASEnQTREbaP5S5/3DCcsoAOcQ0sV9E4AeY4QqYQ==}
 
   '@img/colour@1.1.0':
     resolution: {integrity: sha512-Td76q7j57o/tLVdgS746cYARfSyxk8iEfRxewL9h4OMzYhbW4TAcppl0mT4eyqXddh6L/jwoM75mo7ixa/pCeQ==}
@@ -1127,7 +1127,7 @@ snapshots:
 
   '@fontsource-variable/dm-sans@5.3.0': {}
 
-  '@fontsource/cormorant-garamond@5.3.0': {}
+  '@fontsource/instrument-serif@5.3.0': {}
 
   '@img/colour@1.1.0':
     optional: true

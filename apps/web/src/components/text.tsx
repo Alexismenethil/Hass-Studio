@@ -2,9 +2,9 @@ import { Fragment, type CSSProperties } from "react";
 import { lines } from "@/lib/content";
 
 /**
- * Words come into focus one after another as the reader scrolls: each one knows
- * its turn (--wi) and how many there are (--wc), which is all the CSS needs to
- * give it its own slice of the scroll.
+ * Words are written in as the reader scrolls: each one knows its turn (--wi of
+ * --wc) and its place in its paragraph line (--li of --ll), which is all the CSS
+ * needs to give it its own slice of the scroll.
  */
 export function Words({ text }: { text: string }) {
   const rows = lines(text);
@@ -12,18 +12,24 @@ export function Words({ text }: { text: string }) {
   let index = 0;
   return (
     <>
-      {rows.map((line, i) => (
-        <span key={i} className="line">
-          {line.split(" ").map((word, n) => (
-            <Fragment key={n}>
-              {/* The space stays outside: an inline-block would swallow it. */}
-              <span className="w" style={{ "--wi": index++, "--wc": count } as CSSProperties}>
-                {word}
-              </span>{" "}
-            </Fragment>
-          ))}
-        </span>
-      ))}
+      {rows.map((line, i) => {
+        const words = line.split(" ");
+        return (
+          <span key={i} className="line">
+            {words.map((word, n) => (
+              <Fragment key={n}>
+                {/* The space stays outside: an inline-block would swallow it. */}
+                <span
+                  className="w"
+                  style={{ "--wi": index++, "--wc": count, "--li": n, "--ll": words.length } as CSSProperties}
+                >
+                  {word}
+                </span>{" "}
+              </Fragment>
+            ))}
+          </span>
+        );
+      })}
     </>
   );
 }

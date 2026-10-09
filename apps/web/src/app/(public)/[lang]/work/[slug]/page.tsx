@@ -1,7 +1,10 @@
 import Link from "next/link";
+import type { CSSProperties } from "react";
 import { notFound } from "next/navigation";
 import { getContent } from "@/lib/server/content";
-import { text, copy, stillOf, workCover, workMedia, type Locale } from "@/lib/content";
+import { text, copy, isVideo, stillOf, workCover, workMedia, type Locale } from "@/lib/content";
+import { shapesOf } from "@/lib/server/shape";
+import { sizedSource } from "@/lib/media";
 import { Arrow } from "@/components/icon";
 import { Media } from "@/components/media";
 import { MirrorStage } from "@/components/mirror-stage";
@@ -33,13 +36,21 @@ export default async function CasePage({ params }: { params: Params }) {
   if (!w) notFound();
   const t = copy[lang];
   const service = categories.find((c) => c.id === w.category_id);
-  const siblings = works.filter((x) => x.category_id === w.category_id);
-  const pool = siblings.length > 1 ? siblings : works;
-  const next = pool.length > 1 ? pool[(pool.indexOf(w) + 1) % pool.length] : null;
-  const media = workMedia(w);
+  // Every project leads to the next one, round the whole portfolio.
+  const next = works.length > 1 ? works[(works.indexOf(w) + 1) % works.length] : null;
   const challenge = text(w.challenge, lang);
   const approach = text(w.approach, lang);
   const scope = w.services.filter(Boolean);
+  const stills = Array.from(new Set([w.cover, ...w.gallery].filter((m) => m && !isVideo(m))));
+  const shapes = await shapesOf(stills);
+  // The laptop plays the first few page screens (a phone screen belongs in a
+  // phone); the rest are laid out below it, so the scene stays a short walk
+  // however many pictures a project has.
+  const all = workMedia(w);
+  const screens = all.filter((m) => shapes.get(m) !== "tall");
+  const media = (screens.length ? screens : all).slice(0, 4);
+  const pages = stills.filter((m) => shapes.get(m) !== "tall" && !media.includes(m)).slice(0, 6);
+  const phones = stills.filter((m) => shapes.get(m) === "tall").slice(0, 8);
   return (
     <main id="main">
       {/* The laptop opens first; the story follows below it. */}
@@ -47,7 +58,6 @@ export default async function CasePage({ params }: { params: Params }) {
         <MirrorStage
           media={media}
           title={w.title}
-          eyebrow={[service ? text(service.title, lang) : "", w.year].filter(Boolean).join(" · ")}
           locale={lang}
           url={w.url}
         />
@@ -66,7 +76,7 @@ export default async function CasePage({ params }: { params: Params }) {
           )}
           {w.concept && <span className="eyebrow">{t.concept}</span>}
         </div>
-        <h1 className="display" data-chars>
+        <h1 className="display" data-chars style={{ "--len": w.title.length } as CSSProperties}>
           <Chars text={w.title} single />
         </h1>
         <div className="page-hero-meta">
@@ -110,7 +120,7 @@ export default async function CasePage({ params }: { params: Params }) {
       </section>
 
       {(challenge || approach) && (
-        <section className="case-notes" data-header="light">
+        <section className="case-notes" data-header="dark">
           {challenge && (
             <div data-reveal>
               <span className="eyebrow">{t.challenge}</span>
@@ -121,6 +131,41 @@ export default async function CasePage({ params }: { params: Params }) {
             <div data-reveal="0.08">
               <span className="eyebrow">{t.approach}</span>
               <p>{approach}</p>
+            </div>
+          )}
+        </section>
+      )}
+
+      {(pages.length > 0 || phones.length > 0) && (
+        <section className="case-shots" data-header="dark" aria-label={w.title}>
+          {pages.map((src, i) => (
+            <figure key={src} className="cshot" data-tilt>
+              <span className="cshot-window">
+                <span className="cshot-bar" aria-hidden="true">
+                  <i />
+                  <i />
+                  <i />
+                </span>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={sizedSource(src, 1800)}
+                  alt={w.title + " — " + (i + 1)}
+                  loading="lazy"
+                  decoding="async"
+                  width={1600}
+                  height={1000}
+                />
+              </span>
+            </figure>
+          ))}
+          {phones.length > 0 && (
+            <div className="cphones">
+              {phones.map((src, i) => (
+                <span key={src} className="ch-phone-body" data-tilt>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={sizedSource(src, 540)} alt={w.title + (lang === "en" ? " — mobile " : " — móvil ") + (i + 1)} loading="lazy" decoding="async" />
+                </span>
+              ))}
             </div>
           )}
         </section>

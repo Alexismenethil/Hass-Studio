@@ -330,7 +330,7 @@ export function AdminApp({
       key: "home",
       overline: "TU WEB",
       title: "Página de inicio",
-      intro: "Portada, carrusel de servicios y la frase del estudio.",
+      intro: "Portada, proyectos y la frase del estudio.",
       body: <HomeEditor settings={data.settings} />,
     };
   else if (s0 === "web" && s1 === "servicios" && !s2)

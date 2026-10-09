@@ -12,12 +12,6 @@ export default async function Studio({ params }: { params: Promise<{ lang: Local
   return (
     <main id="main">
       <section className="page-hero" data-header="light">
-        <div className="page-hero-top" data-reveal>
-          <span className="eyebrow">
-            {t.studio} / {s.brand}
-          </span>
-          <span className="eyebrow">{text(s.availability, lang)}</span>
-        </div>
         <h1 className="display" data-chars>
           <Chars text={text(s.studioTitle, lang)} italicLast />
         </h1>
@@ -40,27 +34,32 @@ export default async function Studio({ params }: { params: Promise<{ lang: Local
           </p>
         </div>
       </section>
-      <section className="service-list" data-header="light">
-        <span className="eyebrow" data-reveal>
-          {t.services}
-        </span>
-        {categories.map((c, i) => (
-          <Link
-            href={"/" + lang + "/services/" + c.id}
-            className="service-row"
-            key={c.id}
-            data-reveal
-            data-cursor={t.view}
-          >
-            <span className="eyebrow">{pad(i + 1)}</span>
-            <h3>{text(c.title, lang)}</h3>
-            <p>{text(c.services, lang)}</p>
-            <span className="service-row-count">
-              {pad(works.filter((w) => w.category_id === c.id).length)}
-              <Arrow diagonal />
-            </span>
-          </Link>
-        ))}
+      <section className="studio-rows" data-header="light">
+        <div className="rows">
+          <p className="eyebrow rows-head" data-reveal>
+            {t.services}
+          </p>
+          {categories.map((c, i) => {
+            const own = works.filter((w) => w.category_id === c.id).length;
+            return (
+              <Link
+                href={"/" + lang + "/services/" + c.id}
+                className="row"
+                key={c.id}
+                data-reveal
+                data-cursor={t.view}
+              >
+                <span className="row-index">{pad(i + 1)}</span>
+                <span className="row-title">{text(c.title, lang)}</span>
+                <span className="row-includes">{text(c.services, lang)}</span>
+                <span className="row-count">
+                  {own > 0 ? pad(own) : ""}
+                  <Arrow diagonal />
+                </span>
+              </Link>
+            );
+          })}
+        </div>
       </section>
     </main>
   );

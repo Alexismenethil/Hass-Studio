@@ -30,3 +30,18 @@ export function fallBack(video: HTMLVideoElement, original: string) {
   video.load();
   if (video.autoplay || video.dataset.playing) void video.play().catch(() => {});
 }
+
+/**
+ * A tiny, already blurred copy of a picture: stretched over a whole scene it
+ * reads as that picture's light, and costs the phone no filter to draw.
+ */
+export const auraSource = (src: string) =>
+  isCloudinary(src)
+    ? cloudinaryUrl(src, "c_fill,w_96,h_60,e_blur:600,q_auto,f_auto")
+    : imageSource(src, 96, 60);
+
+/** A picture at one width, for a plain <img> that is never drawn much larger. */
+export const sizedSource = (src: string, width: number) =>
+  isCloudinary(src)
+    ? cloudinaryUrl(src, "c_limit,f_auto,q_auto,w_" + width)
+    : imageSource(src, Math.round(width / 2), Math.round(width / 3.2));

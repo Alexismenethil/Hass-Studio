@@ -12,7 +12,7 @@
   },
   "dependencies": {
     "@fontsource-variable/dm-sans": "^5.3.0",
-    "@fontsource/cormorant-garamond": "^5.3.0",
+    "@fontsource/instrument-serif": "^5.3.0",
     "@hass/branding": "workspace:*",
     "@hass/emails": "workspace:*",
     "@react-email/render": "^2.0.0",

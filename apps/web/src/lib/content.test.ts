@@ -44,12 +44,16 @@ test("reject unsafe external and media URLs", () => {
   );
   assert.equal(mediaUrl.safeParse("/images/olive.webp").success, true);
 });
-test("bilingual settings and concepts validate", () => {
+test("bilingual settings and seed work validate", () => {
   assert.doesNotThrow(() => settingsSchema.parse(initial.settings));
   // Settings saved before the contact background existed still load.
   const { contactImage: _, ...older } = initial.settings;
   assert.equal(settingsSchema.parse(older).contactImage, "");
-  initial.works.forEach((w) => assert.equal(workSchema.parse(w).concept, true));
+  // Real work links to its live site; anything without one must be labelled a design study.
+  initial.works.forEach((w) => {
+    const work = workSchema.parse(w);
+    assert.ok(work.concept || work.url, work.slug);
+  });
 });
 test("updates cannot contain invalid progress or private traversal paths", () => {
   const u = {

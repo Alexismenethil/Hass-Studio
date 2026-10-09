@@ -23,9 +23,6 @@ export default async function Contact({ params }: { params: Promise<{ lang: Loca
         </div>
         <div className="contact-stage">
           <div className="contact-intro">
-            <span className="eyebrow" data-reveal>
-              {text(s.availability, lang)}
-            </span>
             <h1 className="display" data-chars>
               <Chars text={text(s.contactTitle, lang)} italicLast />
             </h1>

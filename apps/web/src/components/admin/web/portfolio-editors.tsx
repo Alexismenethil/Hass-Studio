@@ -55,7 +55,7 @@ export function ServicesBoard({ categories, works }: { categories: Category[]; w
         <li>
           <b>01</b>
           <span>
-            Cada <strong>servicio</strong> es una diapositiva del carrusel de la portada.
+            Cada <strong>servicio</strong> es una diapositiva del carrusel de la página Servicios.
           </span>
         </li>
         <li>
@@ -179,7 +179,7 @@ export function ServiceDetail({
           <LangSwitch lang={lang} setLang={setLang} values={[c.title, c.description, c.services]} />
           <Card
             title="Diapositiva del carrusel"
-            intro="Lo que se ve en la portada y en la parte superior de la página del servicio."
+            intro="Lo que se ve en el carrusel de Servicios y en la parte superior de la página del servicio."
           >
             <BiField
               label="Nombre del servicio"
@@ -606,7 +606,7 @@ export function WorkEditor({
                 checked={w.featured}
                 onChange={(featured) => set("featured", featured)}
                 label="Destacar en la portada"
-                hint="Aparece en la tira de trabajos de la página de inicio."
+                hint="Tiene su propio capítulo en la portada, y sus fotos flotan en el vuelo 3D del inicio."
               />
             </div>
             <LaptopPreview src={w.gallery[0] || w.cover} />

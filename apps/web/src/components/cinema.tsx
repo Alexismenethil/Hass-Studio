@@ -249,7 +249,7 @@ export function PageTransition() {
       <span className="veil-warm" />
       <span className="veil-sheet" />
       <span className="veil-card" key={label}>
-        <Sun className="veil-sun" />
+        <span className="veil-mark">HASS</span>
         {label && (
           <span className="veil-name">
             {Array.from(label).map((char, i) => (

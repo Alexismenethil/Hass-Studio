@@ -34,11 +34,11 @@ export function HomeEditor({ settings }: { settings: Settings }) {
           <LangSwitch
             lang={lang}
             setLang={setLang}
-            values={[s.heroTitle, s.heroDescription, s.introTitle, s.heroEyebrow, s.workTitle, s.introText]}
+            values={[s.heroTitle, s.heroDescription, s.workTitle, s.introText]}
           />
           <Card
             title="1 · Portada"
-            intro="La primera pantalla: tu imagen con luz entre hojas de olivo que se mueve, tu frase grande y una línea corta."
+            intro="La primera pantalla: tu frase grande en el centro y las fotos de tus proyectos flotando alrededor en 3D. Al bajar, la cámara vuela entre ellas hacia tus proyectos."
           >
             <BiField
               label="Frase grande"
@@ -46,68 +46,34 @@ export function HomeEditor({ settings }: { settings: Settings }) {
               rows={2}
               value={s.heroTitle}
               onChange={(v) => set("heroTitle", v)}
-              hint="Pulsa Enter para partirla en dos líneas. La última línea aparece en cursiva."
+              hint="Pulsa Enter para partirla en dos líneas. La última línea aparece en cursiva y en color caramelo."
             />
             <BiField
-              label="Línea corta debajo"
+              label="Frases que flotan en el vuelo"
               lang={lang}
-              rows={2}
+              rows={3}
               value={s.heroDescription}
               onChange={(v) => set("heroDescription", v)}
-              hint="Una sola frase se ve más limpia. Déjalo vacío si no quieres texto."
+              hint="Aparecen en 3D entre tus proyectos mientras se baja, una tras otra. Una frase por línea (Enter), hasta 3. Déjalo vacío si no quieres ninguna."
             />
+            <p className="kit-note">
+              Las fotos que flotan son las de tus <b>trabajos destacados</b> (portada y galería de cada uno). Las capturas
+              verticales se muestran como teléfonos.
+            </p>
             <div className="kit-row">
               <MediaPicker
-                label="Imagen o vídeo de fondo"
+                label="Imagen al compartir el enlace"
                 kind="media"
                 value={s.heroImage}
                 onChange={(v) => set("heroImage", v)}
-                hint="Horizontal, al menos 1920 px de ancho. Un vídeo MP4 corto y sin sonido también funciona."
+                hint="Aparece cuando compartes tu web en WhatsApp o redes. Horizontal, 1200 × 630 o más."
               />
-              <MediaPicker
-                label="Foto o vídeo para móviles (opcional)"
-                ratio="9 / 13"
-                value={s.heroMobileImage}
-                onChange={(v) => set("heroMobileImage", v)}
-                hint="Vertical. Si lo dejas vacío se usa el fondo principal."
-              />
+              <div />
             </div>
           </Card>
           <Card
-            title="2 · El arco"
-            intro="Al bajar, la portada se cierra en un arco y aparece tu frase a ambos lados. Luego se atraviesa el arco hacia los servicios."
-          >
-            <BiField
-              label="Frase a los lados del arco"
-              lang={lang}
-              rows={2}
-              value={s.introTitle}
-              onChange={(v) => set("introTitle", v)}
-              hint="Primera línea a la izquierda, segunda a la derecha (en cursiva)."
-            />
-            <BiField
-              label="Frase pequeña bajo el arco"
-              lang={lang}
-              value={s.heroEyebrow}
-              onChange={(v) => set("heroEyebrow", v)}
-            />
-          </Card>
-          <Card
-            title="3 · Carrusel de servicios"
-            intro="Cada diapositiva es uno de tus servicios: su foto de fondo, su nombre gigante y un arco con sus trabajos."
-            aside={
-              <Link className="admin-secondary" href={base + "/web/servicios"}>
-                Editar servicios →
-              </Link>
-            }
-          >
-            <p className="kit-note">
-              El orden, los títulos, las imágenes y los trabajos se editan en <b>Servicios y trabajos</b>.
-            </p>
-          </Card>
-          <Card
-            title="4 · Trabajos destacados"
-            intro="Una tira de trabajos que avanza de lado al hacer scroll."
+            title="2 · Proyectos"
+            intro="Cada trabajo destacado es un capítulo: su nombre gigante, una laptop que se abre con su vídeo o pantallas y un teléfono con su versión móvil."
           >
             <BiField
               label="Título"
@@ -118,18 +84,31 @@ export function HomeEditor({ settings }: { settings: Settings }) {
               hint="También es el título de la página Proyectos."
             />
             <p className="kit-note">
-              Activa <b>«Destacar en la portada»</b> dentro de cada trabajo. Si destacas menos de 3, se muestran
-              tus trabajos en orden.
+              Activa <b>«Destacar en la portada»</b> dentro de cada trabajo. Si no destacas ninguno, se muestran tus
+              trabajos en orden.
             </p>
           </Card>
-          <Card title="5 · Sobre el estudio" intro="Tu texto con una foto en arco, justo antes del pie de página.">
+          <Card
+            title="3 · Servicios"
+            intro="Al final de la portada, tus servicios en una lista. El carrusel completo vive en la página Servicios."
+            aside={
+              <Link className="admin-secondary" href={base + "/web/servicios"}>
+                Editar servicios →
+              </Link>
+            }
+          >
+            <p className="kit-note">
+              El orden, los títulos, las imágenes y los trabajos se editan en <b>Servicios y trabajos</b>.
+            </p>
+          </Card>
+          <Card title="4 · Sobre el estudio" intro="Tu texto con una foto en arco, justo antes de los servicios.">
             <BiField
               label="Texto"
               lang={lang}
               rows={4}
               value={s.introText}
               onChange={(v) => set("introText", v)}
-              hint="Se ilumina palabra por palabra al hacer scroll."
+              hint="Se escribe palabra por palabra al hacer scroll, con un destello caramelo."
             />
             <div className="kit-row">
               <MediaPicker
@@ -159,7 +138,7 @@ export function HomeEditor({ settings }: { settings: Settings }) {
               </div>
             </div>
             <div className="statement-preview">
-              <strong>{s.introTitle[lang] || s.introTitle.en}</strong>
+              <strong>{s.workTitle[lang] || s.workTitle.en}</strong>
               <small>{s.introText[lang] || s.introText.en}</small>
             </div>
           </div>
